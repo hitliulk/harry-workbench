@@ -644,7 +644,9 @@
     if(state.weeks.length===0){box.innerHTML=emptyState('还没有周任务，先在「月目标」里建立目标再拆解周任务');return;}
     const statusMap={todo:['chip-gray','待办'],doing:['chip-cyan','进行中'],done:['chip-green','已完成']};
     const priMap={P0:['chip-red','P0'],P1:['chip-amber','P1'],P2:['chip-gray','P2']};
-    box.innerHTML=state.weeks.map(w=>{
+    const statusOrder={todo:0,doing:1,done:2};
+    const weekList=[...state.weeks].sort((a,b)=>(statusOrder[a.status]||9)-(statusOrder[b.status]||9));
+    box.innerHTML=weekList.map(w=>{
       const g=state.goals.find(x=>x.id===w.goalId);
       const p=weekProgress(w);
       const td=weekDone(w),tt=weekTotal(w);
@@ -679,6 +681,8 @@
     if(state.todos.length===0){box.innerHTML=emptyState('还没有每日待办，点击右上角「新建待办」');return;}
     const priMap={P0:['chip-red','P0'],P1:['chip-amber','P1'],P2:['chip-gray','P2']};
     const sorted=[...state.todos].sort((a,b)=>{
+      const ad=a.status==='done', bd=b.status==='done';
+      if(ad!==bd)return ad?1:-1;            // 未完成排上面，已完成沉底
       if(a.date!==b.date)return a.date<b.date?-1:1;
       const pr={P0:0,P1:1,P2:2};return (pr[a.priority]||9)-(pr[b.priority]||9);
     });

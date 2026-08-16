@@ -428,7 +428,7 @@
   function stopAutoSync(){ if(autoPullTimer){clearInterval(autoPullTimer);autoPullTimer=null;} }
   async function connectSync(){
     let tok=document.getElementById('f_tok').value.trim();
-    if(!tok) tok=getTok();           // 已记住令牌则直接复用，无需重复输入
+    if(!tok || /^•+$/.test(tok)) tok=getTok();   // 留空或仍是掩码时复用已存令牌，避免把掩码当新令牌发出去
     if(!tok){toast('请填写 GitHub Token');return;}
     setTok(tok);
     try{
@@ -494,11 +494,11 @@
     const gistInfo=connected?`<div class="field"><label>当前同步 ID</label><input id="f_gist" value="${getGist()}"><div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">两台设备显示的 ID 必须<b>一致</b>才在共享同一份数据。若不一致，把此端手动填成和另一端<b>完全相同</b>，点下方「应用此ID」即可对齐，无需断开重连。</div></div><div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" onclick="applyGistId()">应用此ID</button></div>`:'';
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg>云同步（GitHub Gist）</h3>
       <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。<br><b>自动同步已开启</b>：任一端改动后约 1 秒推送到云，另一端每 20 秒自动拉取合并；多设备请用<b>同一个令牌</b>以共享同一份数据。</p>
-      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌，留空直接点「连接并同步」即可。</div>':''}</div>
+      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌；更换令牌请直接输入新令牌，再点「更新令牌」。</div>':''}</div>
       ${gistInfo}
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-        ${connected?'<button class="btn btn-danger" onclick="disconnectSync()">断开</button>':'<button class="btn btn-primary" onclick="connectSync()">连接并同步</button>'}
+        ${connected?'<button class="btn btn-danger" onclick="disconnectSync()">断开</button><button class="btn btn-primary" onclick="connectSync()">更新令牌</button>':'<button class="btn btn-primary" onclick="connectSync()">连接并同步</button>'}
       </div>
       ${connected?'<div style="margin-top:12px;display:flex;gap:10px;"><button class="btn btn-ghost btn-sm" onclick="manualSync()">立即同步一次</button><button class="btn btn-ghost btn-sm" onclick="syncPull(false)">拉取最新</button></div>':''}`);
   }

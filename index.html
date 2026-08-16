@@ -372,7 +372,16 @@
   const setTok=v=>{v?localStorage.setItem('hw_gh_token',v):localStorage.removeItem('hw_gh_token');};
   const setGist=v=>{v?localStorage.setItem('hw_gist_id',v):localStorage.removeItem('hw_gist_id');};
   const ghHeaders=()=>({'Authorization':'Bearer '+getTok(),'Content-Type':'application/json','Accept':'application/vnd.github+json'});
-  function syncStatus(txt,cls){const el=document.getElementById('syncStatus');if(el){el.textContent=txt;el.className='sync-'+cls;}}
+  function syncStatus(txt,cls){
+    const el=document.getElementById('syncStatus');
+    if(el){
+      let s=txt;
+      const g=getGist();
+      if(g&&cls==='ok')s=txt+' ·'+g.slice(-6);   // 末尾 6 位 ID：两台设备显示一致才在共享同一份数据
+      el.textContent=s;
+      el.className='sync-'+cls;
+    }
+  }
   let syncTimer=null;
   let syncedRev=0;          // 最近一次推送/拉取成功的版本号（LWW 比对基线）
   let autoPullTimer=null;
@@ -418,7 +427,8 @@
   function startAutoSync(){ if(autoPullTimer)return; autoPullTimer=setInterval(autoPullLoop,20000); }
   function stopAutoSync(){ if(autoPullTimer){clearInterval(autoPullTimer);autoPullTimer=null;} }
   async function connectSync(){
-    const tok=document.getElementById('f_tok').value.trim();
+    let tok=document.getElementById('f_tok').value.trim();
+    if(!tok) tok=getTok();           // 已记住令牌则直接复用，无需重复输入
     if(!tok){toast('请填写 GitHub Token');return;}
     setTok(tok);
     try{
@@ -461,9 +471,11 @@
   window.manualSync=async function(){syncStatus('同步中…','busy');await syncPull(true);await syncPush();toast('已同步');};
   function syncPanel(){
     const connected=getTok()&&getGist();
+    const gistInfo=connected?`<div class="field"><label>当前同步 ID</label><input readonly value="${getGist()}"><div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">两台设备显示的 ID 必须<b>一致</b>才在共享同一份数据；不一致说明各自连了不同的 Gist，请两端都「断开」后用同一令牌重连。</div></div>`:'';
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg>云同步（GitHub Gist）</h3>
       <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。<br><b>自动同步已开启</b>：任一端改动后约 1 秒推送到云，另一端每 20 秒自动拉取合并；多设备请用<b>同一个令牌</b>以共享同一份数据。</p>
-      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}"></div>
+      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌，留空直接点「连接并同步」即可。</div>':''}</div>
+      ${gistInfo}
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         ${connected?'<button class="btn btn-danger" onclick="disconnectSync()">断开</button>':'<button class="btn btn-primary" onclick="connectSync()">连接并同步</button>'}

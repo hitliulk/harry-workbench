@@ -469,9 +469,29 @@
   window.connectSync=connectSync;
   window.disconnectSync=function(){stopAutoSync();setTok('');setGist('');syncStatus('未连接','off');closeModal();toast('已断开云同步');};
   window.manualSync=async function(){syncStatus('同步中…','busy');await syncPull(true);await syncPush();toast('已同步');};
+  window.applyGistId=async function(){
+    const v=(document.getElementById('f_gist')||{}).value;
+    if(!v||!v.trim()){toast('请输入同步ID');return;}
+    const gid=v.trim();
+    syncStatus('校验中…','busy');
+    try{
+      const r=await fetch(GH_API+'/gists/'+gid,{headers:ghHeaders()});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      setGist(gid);
+      stopAutoSync();
+      await syncPull(true);
+      startAutoSync();
+      syncStatus('已连接','ok');
+      closeModal();
+      toast('已切换到该同步ID，自动同步已重启');
+    }catch(e){
+      syncStatus('该ID无法访问','err');
+      toast('该同步ID无法访问（不存在或令牌无权）：'+(e.message||e));
+    }
+  };
   function syncPanel(){
     const connected=getTok()&&getGist();
-    const gistInfo=connected?`<div class="field"><label>当前同步 ID</label><input readonly value="${getGist()}"><div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">两台设备显示的 ID 必须<b>一致</b>才在共享同一份数据；不一致说明各自连了不同的 Gist，请两端都「断开」后用同一令牌重连。</div></div>`:'';
+    const gistInfo=connected?`<div class="field"><label>当前同步 ID</label><input id="f_gist" value="${getGist()}"><div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">两台设备显示的 ID 必须<b>一致</b>才在共享同一份数据。若不一致，把此端手动填成和另一端<b>完全相同</b>，点下方「应用此ID」即可对齐，无需断开重连。</div></div><div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" onclick="applyGistId()">应用此ID</button></div>`:'';
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg>云同步（GitHub Gist）</h3>
       <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。<br><b>自动同步已开启</b>：任一端改动后约 1 秒推送到云，另一端每 20 秒自动拉取合并；多设备请用<b>同一个令牌</b>以共享同一份数据。</p>
       <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌，留空直接点「连接并同步」即可。</div>':''}</div>

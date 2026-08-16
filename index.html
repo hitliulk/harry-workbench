@@ -349,8 +349,11 @@
     if(!state.annual)state.annual=[];if(!state.goals)state.goals=[];if(!state.weeks)state.weeks=[];if(!state.todos)state.todos=[];
     if(!state.meta)state.meta={};
   }
-  function save(){
+  function persist(){
     try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("保存失败：存储空间不足");}
+  }
+  function save(){
+    persist();
     // 30 条备份提示
     const total=state.annual.length+state.goals.length+state.weeks.length+state.todos.length;
     const hint=document.getElementById('backupHint');
@@ -371,6 +374,8 @@
   const ghHeaders=()=>({'Authorization':'Bearer '+getTok(),'Content-Type':'application/json','Accept':'application/vnd.github+json'});
   function syncStatus(txt,cls){const el=document.getElementById('syncStatus');if(el){el.textContent=txt;el.className='sync-'+cls;}}
   let syncTimer=null;
+  let syncedRev=0;          // 最近一次推送/拉取成功的版本号（LWW 比对基线）
+  let autoPullTimer=null;
   function scheduleSync(){
     if(!getTok()||!getGist())return;
     clearTimeout(syncTimer);
@@ -379,10 +384,12 @@
   async function syncPush(){
     if(!getTok()||!getGist())return;
     try{
-      const payload={rev:Date.now(),data:state};
+      const rev=Date.now();
+      const payload={rev,data:state};
       const body=JSON.stringify({files:{[SYNC_FILE]:{content:JSON.stringify(payload)}}});
       const r=await fetch(GH_API+'/gists/'+getGist(),{method:'PATCH',headers:ghHeaders(),body});
       if(!r.ok)throw new Error('HTTP '+r.status);
+      syncedRev=rev;   // 推送成功，本端即最新基线
       syncStatus('已同步 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),'ok');
     }catch(e){syncStatus('同步失败 '+(e.message||e),'err');}
   }
@@ -396,10 +403,9 @@
       if(!raw)return false;
       const payload=JSON.parse(raw);
       const remoteRev=payload.rev||0;
-      const localRev=(state&&state._rev)||0;
-      if(remoteRev>localRev){
-        state=payload.data; state._rev=remoteRev;
-        save(); renderAll();
+      if(remoteRev>syncedRev){
+        state=payload.data; syncedRev=remoteRev;
+        persist(); renderAll();   // 仅落盘+刷新，不再回推，避免拉取→推送死循环
         syncStatus(silent?'已同步':'已拉取 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),'ok');
       }else if(!silent){
         syncStatus('已是最新','ok');
@@ -407,6 +413,10 @@
       return true;
     }catch(e){if(!silent)syncStatus('拉取失败 '+(e.message||e),'err');return false;}
   }
+  // 自动拉取：每 20 秒静默检查一次远端，发现更新即合并（电脑/手机双向实时互通）
+  async function autoPullLoop(){ if(!getTok()||!getGist())return; try{await syncPull(true);}catch(e){} }
+  function startAutoSync(){ if(autoPullTimer)return; autoPullTimer=setInterval(autoPullLoop,20000); }
+  function stopAutoSync(){ if(autoPullTimer){clearInterval(autoPullTimer);autoPullTimer=null;} }
   async function connectSync(){
     const tok=document.getElementById('f_tok').value.trim();
     if(!tok){toast('请填写 GitHub Token');return;}
@@ -414,24 +424,45 @@
     try{
       const test=await fetch(GH_API+'/user',{headers:ghHeaders()});
       if(!test.ok)throw new Error('令牌无效或无权限');
-      const payload={rev:Date.now(),data:state};
-      const body=JSON.stringify({description:'Harry的工作台 云同步',public:false,files:{[SYNC_FILE]:{content:JSON.stringify(payload)}}});
-      const r=await fetch(GH_API+'/gists',{method:'POST',headers:ghHeaders(),body});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      const j=await r.json();
-      setGist(j.id);
+      // 复用同一令牌下的已有同步 Gist（多设备共享同一份数据，而不是各自新建）
+      let gid=null;
+      try{
+        const list=await fetch(GH_API+'/gists',{headers:ghHeaders()});
+        if(list.ok){
+          const arr=await list.json();
+          let best=null,bestRev=-1;
+          for(const g of arr){
+            const c=g.files&&g.files[SYNC_FILE]&&g.files[SYNC_FILE].content;
+            if(!c)continue;
+            let rv=0;try{const p=JSON.parse(c);rv=p.rev||0;}catch(e){}
+            if(rv>bestRev){bestRev=rv;best=g;}
+          }
+          if(best)gid=best.id;
+        }
+      }catch(e){}
+      if(gid){
+        setGist(gid);
+        await syncPull(true);           // 复用已有 Gist：先拉取，保证本机与远端一致
+      }else{
+        const payload={rev:Date.now(),data:state};
+        const body=JSON.stringify({description:'Harry的工作台 云同步',public:false,files:{[SYNC_FILE]:{content:JSON.stringify(payload)}}});
+        const r=await fetch(GH_API+'/gists',{method:'POST',headers:ghHeaders(),body});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const j=await r.json();
+        setGist(j.id);
+      }
       syncStatus('已连接','ok');
-      closeModal();toast('云同步已开启');
-      scheduleSync();
+      closeModal();toast('云同步已开启（自动同步中）');
+      startAutoSync(); scheduleSync();
     }catch(e){setTok('');syncStatus('未连接','off');toast('连接失败：'+(e.message||e));}
   }
   window.connectSync=connectSync;
-  window.disconnectSync=function(){setTok('');setGist('');syncStatus('未连接','off');closeModal();toast('已断开云同步');};
+  window.disconnectSync=function(){stopAutoSync();setTok('');setGist('');syncStatus('未连接','off');closeModal();toast('已断开云同步');};
   window.manualSync=async function(){syncStatus('同步中…','busy');await syncPull(true);await syncPush();toast('已同步');};
   function syncPanel(){
     const connected=getTok()&&getGist();
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg>云同步（GitHub Gist）</h3>
-      <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。</p>
+      <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。<br><b>自动同步已开启</b>：任一端改动后约 1 秒推送到云，另一端每 20 秒自动拉取合并；多设备请用<b>同一个令牌</b>以共享同一份数据。</p>
       <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
@@ -1033,10 +1064,14 @@
   carryOver();
   renderAll();
 
-  // 云同步：已连接则先拉取最新（电脑/手机互通），再注册 Service Worker 以支持手机安装与离线
+  // 云同步：已连接则先拉取最新（电脑/手机互通），并开启自动同步；再注册 Service Worker 以支持手机安装与离线
   if(getTok()&&getGist()){
     syncStatus('拉取中…','busy');
     syncPull(true).then(()=>renderAll()).catch(()=>{});
+    startAutoSync();
+    // 切回前台 / 恢复网络时立即拉取一次，保证两端及时互通
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoPullLoop();});
+    window.addEventListener('online',()=>autoPullLoop());
   }
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});

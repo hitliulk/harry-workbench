@@ -367,10 +367,47 @@
   // ---- 云同步（GitHub Gist）：电脑/手机跨设备互通 ----
   const GH_API='https://api.github.com';
   const SYNC_FILE='harry-workbench.json';
+  // 凭据双写持久化：手机 PWA（尤其 iOS 从主屏打开）常会回收清空 localStorage，
+  // 导致重开要重输令牌。因此令牌同时写 localStorage 与更耐回收的 IndexedDB，
+  // 启动时若 localStorage 被清空，自动从 IndexedDB 恢复，实现「一次输入、之后自动登录」。
+  let _credDB=null;
+  function credDB(){
+    if(_credDB)return _credDB;
+    _credDB=new Promise((res,rej)=>{
+      const req=indexedDB.open('hw_cred',1);
+      req.onupgradeneeded=()=>{ try{req.result.createObjectStore('kv');}catch(e){} };
+      req.onsuccess=()=>res(req.result);
+      req.onerror=()=>rej(req.error);
+    });
+    return _credDB;
+  }
+  function credPut(key,val){
+    credDB().then(db=>{
+      const tx=db.transaction('kv','readwrite');
+      if(val) tx.objectStore('kv').put(val,key); else tx.objectStore('kv').delete(key);
+    }).catch(()=>{});
+  }
+  async function credGet(key){
+    try{
+      const db=await credDB();
+      return await new Promise((res)=>{
+        const tx=db.transaction('kv','readonly');
+        const rq=tx.objectStore('kv').get(key);
+        rq.onsuccess=()=>res(rq.result||'');
+        rq.onerror=()=>res('');
+      });
+    }catch(e){ return ''; }
+  }
+  async function hydrateCreds(){
+    if(getTok()&&getGist())return;                 // localStorage 仍完整，无需恢复
+    const [t,g]=await Promise.all([credGet('tok'),credGet('gist')]);
+    if(!getTok()&&t) localStorage.setItem('hw_gh_token',t);
+    if(!getGist()&&g) localStorage.setItem('hw_gist_id',g);
+  }
   const getTok=()=>localStorage.getItem('hw_gh_token')||'';
   const getGist=()=>localStorage.getItem('hw_gist_id')||'';
-  const setTok=v=>{v?localStorage.setItem('hw_gh_token',v):localStorage.removeItem('hw_gh_token');};
-  const setGist=v=>{v?localStorage.setItem('hw_gist_id',v):localStorage.removeItem('hw_gist_id');};
+  const setTok=v=>{ v?localStorage.setItem('hw_gh_token',v):localStorage.removeItem('hw_gh_token'); credPut('tok',v); };
+  const setGist=v=>{ v?localStorage.setItem('hw_gist_id',v):localStorage.removeItem('hw_gist_id'); credPut('gist',v); };
   const ghHeaders=()=>({'Authorization':'Bearer '+getTok(),'Content-Type':'application/json','Accept':'application/vnd.github+json'});
   function syncStatus(txt,cls){
     const el=document.getElementById('syncStatus');
@@ -1100,15 +1137,17 @@
   carryOver();
   renderAll();
 
-  // 云同步：已连接则先拉取最新（电脑/手机互通），并开启自动同步；再注册 Service Worker 以支持手机安装与离线
-  if(getTok()&&getGist()){
-    syncStatus('拉取中…','busy');
-    syncPull(true).then(()=>renderAll()).catch(()=>{});
-    startAutoSync();
-    // 切回前台 / 恢复网络时立即拉取一次，保证两端及时互通
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoPullLoop();});
-    window.addEventListener('online',()=>autoPullLoop());
-  }
+  // 云同步：先尝试从 IndexedDB 恢复被系统回收清空的凭据，再自动登录并拉取最新
+  hydrateCreds().then(()=>{
+    if(getTok()&&getGist()){
+      syncStatus('拉取中…','busy');
+      syncPull(true).then(()=>renderAll()).catch(()=>{});
+      startAutoSync();
+      // 切回前台 / 恢复网络时立即拉取一次，保证两端及时互通
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoPullLoop();});
+      window.addEventListener('online',()=>autoPullLoop());
+    }
+  });
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});
   }

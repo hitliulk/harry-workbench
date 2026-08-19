@@ -77,6 +77,14 @@
   .btn-danger:hover{background:rgba(239,68,68,.2);}
   .btn-sm{padding:6px 10px;font-size:12px;min-height:32px;border-radius:8px;}
 
+  /* 今日日期横条 */
+  .datebar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:16px 22px;border-radius:16px;background:linear-gradient(90deg,rgba(34,211,238,.16),rgba(59,130,246,.16));border:1px solid rgba(34,211,238,.40);box-shadow:0 4px 20px rgba(34,211,238,.10);}
+  .datebar .db-left{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .datebar .db-label{font-size:13px;font-weight:700;color:#7dd3fc;letter-spacing:3px;}
+  .datebar .db-date{font-size:30px;font-weight:800;color:#eaf7ff;letter-spacing:1px;line-height:1.1;}
+  .datebar .db-week{font-size:16px;color:#bae6fd;font-weight:600;}
+  .datebar .db-right{font-size:13px;color:var(--txt2);}
+
   /* Today banner */
   .today{
     background:linear-gradient(180deg,rgba(239,68,68,.10),rgba(245,158,11,.06));
@@ -225,6 +233,14 @@
       <input type="file" id="fileImport" accept=".json" class="hidden">
     </div>
   </header>
+  <div class="datebar">
+    <div class="db-left">
+      <span class="db-label">今 日</span>
+      <span class="db-date" id="dbDate">—</span>
+      <span class="db-week" id="dbWeek"></span>
+    </div>
+    <div class="db-right" id="dbExtra"></div>
+  </div>
   <div class="pathbar" id="pathbar">导出路径：<b id="pathName">未设置（导出到浏览器默认下载目录）</b></div>
   <div class="syncbar">云同步：<span id="syncStatus" class="sync-off">未连接</span></div>
 
@@ -352,15 +368,37 @@
   function persist(){
     try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("保存失败：存储空间不足");}
   }
-  function save(){
-    persist();
-    // 30 条备份提示
+  // 备份提示：数据≥30 条时提醒导出；导出成功后记录时间并切换为「已保存」状态
+  function fmtTime(ts){
+    const d=new Date(ts);const p=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function updateBackupHint(){
     const total=state.annual.length+state.goals.length+state.weeks.length+state.todos.length;
     const hint=document.getElementById('backupHint');
-    if(total>=30 && !state.meta.ackBackup){
-      hint.classList.remove('hidden');
+    if(total<30){hint.classList.add('hidden');return;}
+    hint.classList.remove('hidden');
+    if(state.meta && state.meta.lastExport){
+      document.getElementById('backupHintText').textContent=`✓ 已保存 JSON 快照（上次导出：${fmtTime(state.meta.lastExport)}），当前共 ${total} 条，建议定期备份。`;
+    }else{
       document.getElementById('backupHintText').textContent=`数据已积累 ${total} 条，建议点右上角「导出备份」保存一份 JSON 快照。`;
     }
+  }
+  // 顶部今日日期横条
+  function renderDateBar(){
+    try{
+      const d=new Date();
+      const wd=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+      const y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
+      const dbDate=document.getElementById('dbDate'),dbWeek=document.getElementById('dbWeek'),dbExtra=document.getElementById('dbExtra');
+      if(dbDate)dbDate.textContent=`${y}年${m}月${day}日`;
+      if(dbWeek)dbWeek.textContent=wd;
+      if(dbExtra){const start=new Date(y,0,1);const doy=Math.floor((d-start)/86400000)+1;dbExtra.textContent=`${y} 年第 ${doy} 天`;}
+    }catch(e){}
+  }
+  function save(){
+    persist();
+    updateBackupHint();
     scheduleSync();
   }
 
@@ -531,7 +569,7 @@
     const gistInfo=connected?`<div class="field"><label>当前同步 ID</label><input id="f_gist" value="${getGist()}"><div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">两台设备显示的 ID 必须<b>一致</b>才在共享同一份数据。若不一致，把此端手动填成和另一端<b>完全相同</b>，点下方「应用此ID」即可对齐，无需断开重连。</div></div><div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" onclick="applyGistId()">应用此ID</button></div>`:'';
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg>云同步（GitHub Gist）</h3>
       <p class="confirm-msg">用于电脑与手机数据互通。需要一个 GitHub 个人令牌（fine-grained，勾选 <b>gist</b> 权限）。令牌仅存在本机浏览器，不上传第三方。<br><b>自动同步已开启</b>：任一端改动后约 1 秒推送到云，另一端每 20 秒自动拉取合并；多设备请用<b>同一个令牌</b>以共享同一份数据。</p>
-      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌；更换令牌请直接输入新令牌，再点「更新令牌」。</div>':''}</div>
+      <div class="field"><label>GitHub Token</label><input id="f_tok" type="password" placeholder="ghp_... 或 github_pat_..." value="${connected?getTok().replace(/./g,'•'):''}">${connected?'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">✓ 已记住令牌；更换令牌请直接输入新令牌，再点「更新令牌」。</div>':'<div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px;">⚠ 若每次打开都要重输令牌：多因手机浏览器在关闭时清掉存储。尤其华为浏览器「添加到主屏」的图标本质是书签，每次打开是新会话，令牌无法保留（双写也救不了）。建议：① 用谷歌 Chrome 打开本页并「安装为应用」（PWA），存储独立且持久；② 或检查浏览器设置，关闭「退出时清除数据」，并改用地址栏输网址而非主屏图标。</div>'}</div>
       ${gistInfo}
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
@@ -825,7 +863,7 @@
 
   // ---- 全部渲染 ----
   function renderAll(){
-    renderToday();renderAnnual();renderGoals();renderWeeks();renderTodos();renderDash();
+    renderToday();renderAnnual();renderGoals();renderWeeks();renderTodos();renderDash();updateBackupHint();renderDateBar();
   }
 
   // ---- Modal 系统 ----
@@ -1040,22 +1078,27 @@
   }
   document.getElementById('btnSetPath').onclick=async function(){await ensureDir();};
   document.getElementById('btnExport').onclick=async function(){
+    if(!state.meta)state.meta={};
+    state.meta.lastExport=Date.now(); // 记录本次导出，刷新提示状态（避免导出后仍显示"建议导出"）
     const fname=`Harry的工作台备份_${todayStr}.json`;
     const data=JSON.stringify(state,null,2);
+    let okExport=false;
     if(fsSupported()){
-      if(!exportDirHandle){const ok=await ensureDir();if(!ok)return;} // 首次导出自动弹选择器，选中后即默认
+      if(!exportDirHandle){const ok=await ensureDir();if(!ok){delete state.meta.lastExport;updateBackupHint();return;}} // 用户取消选目录，不记录
       if(exportDirHandle){
         try{
           const perm=await exportDirHandle.requestPermission({mode:'readwrite'});
-          if(perm!=='granted'){toast('未获得文件夹写入权限，改用下载');return fallbackDownload(data,fname);}
-          const file=await exportDirHandle.getFileHandle(fname,{create:true});
-          const w=await file.createWritable();await w.write(data);await w.close();
-          toast('已导出到：'+exportDirHandle.name+'/'+fname);
-          return;
-        }catch(e){toast('写入失败，改用下载：'+(e.message||e));return fallbackDownload(data,fname);}
+          if(perm!=='granted'){toast('未获得文件夹写入权限，改用下载');}
+          else{
+            const file=await exportDirHandle.getFileHandle(fname,{create:true});
+            const w=await file.createWritable();await w.write(data);await w.close();
+            toast('已导出到：'+exportDirHandle.name+'/'+fname);okExport=true;
+          }
+        }catch(e){toast('写入失败，改用下载：'+(e.message||e));}
       }
     }
-    fallbackDownload(data,fname);
+    if(!okExport){fallbackDownload(data,fname);}
+    persist();updateBackupHint(); // 导出动作完成，更新提示（含「上次导出」时间）
   };
   function fallbackDownload(data,fname){
     const blob=new Blob([data],{type:'application/json'});
@@ -1146,6 +1189,14 @@
       // 切回前台 / 恢复网络时立即拉取一次，保证两端及时互通
       document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoPullLoop();});
       window.addEventListener('online',()=>autoPullLoop());
+    } else {
+      // 凭据既不在 localStorage 也不在 IndexedDB：说明 iOS 清除了浏览器存储
+      // （最常见为 Safari 隐私模式，或系统存储压力/长时间未使用回收）。双写对此无解，
+      // 只能提示用户改用非隐私模式或「添加到主屏幕」的 PWA 方式使用。
+      syncStatus('未连接','off');
+      console.warn('[harry] 凭据丢失：localStorage 与 IndexedDB 均无令牌。'
+        + '疑似 iOS 清除了浏览器存储（Safari 隐私模式 / 系统回收）。'
+        + '请关闭 Safari 隐私模式后重连一次；或改用「添加到主屏幕」的 App 方式使用。');
     }
   });
   if('serviceWorker' in navigator){

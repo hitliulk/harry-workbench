@@ -648,13 +648,18 @@
   function renderGoals(){
     const box=document.getElementById('goalList');
     if(state.goals.length===0){box.innerHTML=emptyState('还没有月目标，点击右上角「新建目标」开始拆解');return;}
-    box.innerHTML=state.goals.map(g=>{
+    // 已完成月计划沉底（与待办/周任务一致）
+    const ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    box.innerHTML=ordered.map(g=>{
       const ws=goalWeeks(g);
       const p=goalProgress(g);
       const done=ws.filter(w=>w.status==='done').length;
-      return `<div class="card">
+      const isDone=g.status==='done';
+      const undone=ws.filter(w=>w.status!=='done').length;
+      const canDone=ws.length>0 && undone===0;
+      return `<div class="card" style="${isDone?'opacity:.55;':''}">
         <div class="card-top">
-          <div class="card-title">${esc(g.title)}</div>
+          <div class="card-title" style="${isDone?'text-decoration:line-through;':''}">${esc(g.title)}</div>
           <span class="chip chip-gold">${esc(g.month||'未设月份')}</span>
         </div>
         ${g.desc?`<div class="card-desc">${esc(g.desc)}</div>`:''}
@@ -663,10 +668,14 @@
           <span class="chip chip-cyan">${g.annualId?((state.annual.find(a=>a.id===g.annualId)||{}).title||'未关联年度'):'未关联年度'}</span>
           <span class="chip chip-blue">周任务 ${ws.length}</span>
           <span class="chip chip-green">已完成 ${done}</span>
+          ${isDone?'<span class="chip chip-green">本月已完成</span>':''}
         </div>
         <div class="pbar"><i style="width:${p}%"></i></div>
         <div class="pcnt">完成度 ${p}%</div>
         <div class="card-actions">
+          ${isDone?'<button class="btn btn-ghost btn-sm" onclick="reopenGoal(\''+g.id+'\')">取消完成</button>'
+            : canDone?'<button class="btn btn-primary btn-sm" onclick="doneGoal(\''+g.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>完成</button>'
+            :'<button class="btn btn-ghost btn-sm" disabled title="还有 '+undone+' 个周计划未完成，需全部完成后才能确认本月完成">完成（'+done+'/'+ws.length+'）</button>'}
           <button class="btn btn-ghost btn-sm" onclick="editGoal('${g.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>编辑</button>
           <button class="btn btn-ghost btn-sm" onclick="delGoal('${g.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>删除</button>
         </div>
@@ -728,9 +737,9 @@
       const s=statusMap[w.status]||statusMap.todo;
       const pr=priMap[w.priority]||priMap.P1;
       const rng=weekRange(w);
-      return `<div class="card">
+      return `<div class="card" style="${w.status==='done'?'opacity:.55;':''}">
         <div class="card-top">
-          <div class="card-title">${esc(w.title)}</div>
+          <div class="card-title" style="${w.status==='done'?'text-decoration:line-through;':''}">${esc(w.title)}</div>
         </div>
         <div class="card-meta">
           <span class="chip chip-blue">${g?esc(g.title):'未关联目标'}</span>
@@ -742,6 +751,7 @@
         <div class="pbar"><i style="width:${p}%"></i></div>
         <div class="pcnt">下钻待办 ${td}/${tt} 完成 · ${p}%</div>
         <div class="card-actions">
+          ${w.status!=='done'?`<button class="btn btn-primary btn-sm" onclick="doneWeek('${w.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>完成</button>`:''}
           <button class="btn btn-ghost btn-sm" onclick="cycleWeek('${w.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>推进状态</button>
           <button class="btn btn-ghost btn-sm" onclick="editWeek('${w.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>编辑</button>
           <button class="btn btn-ghost btn-sm" onclick="delWeek('${w.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>删除</button>
@@ -1015,6 +1025,17 @@
   // ---- 操作 ----
   window.doneTodo=function(id){const t=state.todos.find(x=>x.id===id);if(t){t.status='done';save();renderAll();toast('已完成 ✓');}};
   window.cycleWeek=function(id){const w=state.weeks.find(x=>x.id===id);if(w){const seq=['todo','doing','done'];w.status=seq[(seq.indexOf(w.status)+1)%3];save();renderAll();toast('状态：'+['待办','进行中','已完成'][seq.indexOf(w.status)]);}};
+  window.doneWeek=function(id){const w=state.weeks.find(x=>x.id===id);if(w){w.status='done';save();renderAll();toast('本周任务已完成 ✓');}};
+  // 月计划「完成」：前提是该月下所有周计划均已「已完成」（且至少有一个周计划）
+  window.doneGoal=function(id){
+    const g=state.goals.find(x=>x.id===id);if(!g)return;
+    const ws=goalWeeks(g);
+    const undone=ws.filter(w=>w.status!=='done').length;
+    if(ws.length===0){toast('该月计划下还没有周计划，请先拆解周任务');return;}
+    if(undone>0){toast(`还有 ${undone} 个周计划未完成，无法确认本月完成`);return;}
+    g.status='done';save();renderAll();toast('本月计划已完成 ✓');
+  };
+  window.reopenGoal=function(id){const g=state.goals.find(x=>x.id===id);if(g){g.status='todo';save();renderAll();toast('已取消本月完成状态');}};
   window.editGoal=function(id){goalForm(state.goals.find(x=>x.id===id));};
   window.editWeek=function(id){weekForm(state.weeks.find(x=>x.id===id));};
   window.editTodo=function(id){todoForm(state.todos.find(x=>x.id===id));};

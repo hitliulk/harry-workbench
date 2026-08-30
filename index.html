@@ -424,7 +424,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.5.1";
+  const APP_VERSION="1.5.2";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -514,6 +514,7 @@
   // ---- 云同步（GitHub Gist）：电脑/手机跨设备互通 ----
   const GH_API='https://api.github.com';
   const SYNC_FILE='harry-workbench.json';
+  const LOGO_FILE='harry-workbench-logo.json';   // 头像单独存放，避免被任务 state 的"后写覆盖"规则冲掉
   // 凭据双写持久化：手机 PWA（尤其 iOS 从主屏打开）常会回收清空 localStorage，
   // 导致重开要重输令牌。因此令牌同时写 localStorage 与更耐回收的 IndexedDB，
   // 启动时若 localStorage 被清空，自动从 IndexedDB 恢复，实现「一次输入、之后自动登录」。
@@ -579,7 +580,8 @@
     try{
       const rev=Date.now();
       const payload={rev,data:state};
-      const body=JSON.stringify({files:{[SYNC_FILE]:{content:JSON.stringify(payload)}}});
+      const logoStr=JSON.stringify({logo:(state.meta&&state.meta.logo)||''});
+      const body=JSON.stringify({files:{[SYNC_FILE]:{content:JSON.stringify(payload)},[LOGO_FILE]:{content:logoStr}}});
       const r=await fetch(GH_API+'/gists/'+getGist(),{method:'PATCH',headers:ghHeaders(),body});
       if(!r.ok)throw new Error('HTTP '+r.status);
       syncedRev=rev;   // 推送成功，本端即最新基线
@@ -596,6 +598,12 @@
       if(!raw)return false;
       const payload=JSON.parse(raw);
       const remoteRev=payload.rev||0;
+      // 头像独立存放于 LOGO_FILE，不受任务 state 的"后写覆盖"影响：每次拉取都单独校验并应用
+      let logoChanged=false;
+      try{
+        const lr=j.files&&j.files[LOGO_FILE]&&j.files[LOGO_FILE].content;
+        if(lr){const lj=JSON.parse(lr);const ljLogo=(lj&&lj.logo)||'';const cur=(state.meta&&state.meta.logo)||'';if(cur!==ljLogo){if(!state.meta)state.meta={};state.meta.logo=ljLogo;logoChanged=true;}}
+      }catch(e){}
       if(remoteRev>syncedRev){
         state=payload.data; syncedRev=remoteRev;
         persist(); renderAll(); applyLogo();   // 仅落盘+刷新，不再回推，避免拉取→推送死循环
@@ -603,6 +611,7 @@
       }else if(!silent){
         syncStatus('已是最新','ok');
       }
+      if(logoChanged){persist();applyLogo();}
       return true;
     }catch(e){if(!silent)syncStatus('拉取失败 '+(e.message||e),'err');return false;}
   }
@@ -639,7 +648,8 @@
         await syncPull(true);           // 复用已有 Gist：先拉取，保证本机与远端一致
       }else{
         const payload={rev:Date.now(),data:state};
-        const body=JSON.stringify({description:'Harry的工作台 云同步',public:false,files:{[SYNC_FILE]:{content:JSON.stringify(payload)}}});
+        const logoStr=JSON.stringify({logo:(state.meta&&state.meta.logo)||''});
+        const body=JSON.stringify({description:'Harry的工作台 云同步',public:false,files:{[SYNC_FILE]:{content:JSON.stringify(payload)},[LOGO_FILE]:{content:logoStr}}});
         const r=await fetch(GH_API+'/gists',{method:'POST',headers:ghHeaders(),body});
         if(!r.ok)throw new Error('HTTP '+r.status);
         const j=await r.json();

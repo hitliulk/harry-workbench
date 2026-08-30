@@ -424,7 +424,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.5.0";
+  const APP_VERSION="1.5.1";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -598,7 +598,7 @@
       const remoteRev=payload.rev||0;
       if(remoteRev>syncedRev){
         state=payload.data; syncedRev=remoteRev;
-        persist(); renderAll();   // 仅落盘+刷新，不再回推，避免拉取→推送死循环
+        persist(); renderAll(); applyLogo();   // 仅落盘+刷新，不再回推，避免拉取→推送死循环
         syncStatus(silent?'已同步':'已拉取 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),'ok');
       }else if(!silent){
         syncStatus('已是最新','ok');
@@ -647,6 +647,7 @@
       }
       syncStatus('已连接','ok');
       closeModal();toast('云同步已开启（自动同步中）');
+      promoteLocalLogo();   // 重连时把本机旧头像推上云（若云端尚无）
       startAutoSync(); scheduleSync();
     }catch(e){setTok('');syncStatus('未连接','off');toast('连接失败：'+(e.message||e));}
   }
@@ -1247,7 +1248,7 @@
     rd.onload=async function(){try{const d=JSON.parse(rd.result);if(!d.goals||!d.weeks||!d.todos)throw 0;
       const ok=await confirmModal({title:'导入备份',msg:'将覆盖当前所有数据，确定继续？建议先导出当前数据备份。',okText:'覆盖导入'});
       if(!ok)return;
-      if(!d.annual)d.annual=[];state=d;save();renderAll();toast('导入成功');}catch(err){toast('文件格式不正确');}};
+      if(!d.annual)d.annual=[];state=d;save();renderAll();applyLogo();toast('导入成功');}catch(err){toast('文件格式不正确');}};
     rd.readAsText(f);e.target.value='';
   };
 
@@ -1338,18 +1339,43 @@
   try{showDoneGoals=localStorage.getItem('hw_show_done_goals')==='1';}catch(e){}
   try{showDoneTodos=localStorage.getItem('hw_show_done_todos')==='1';}catch(e){}
 
-  // ---- 左上角头像：一次上传长期保存（存 localStorage，按设备/浏览器持久） ----
+  // 本设备已有头像提升到云同步字段（让旧版已上传的头像也能同步到手机端）
+  function promoteLocalLogo(){
+    try{
+      if(!state.meta)state.meta={};
+      const ls=localStorage.getItem('hw_logo');
+      if(ls && state.meta.logo===undefined){ state.meta.logo=ls; save(); }
+    }catch(e){}
+  }
+  promoteLocalLogo();
+
+  // 读取头像：优先 state.meta.logo（随云同步 / 导出备份跨设备），否则本设备 localStorage 兜底
+  function getLogo(){
+    try{
+      if(state.meta && state.meta.logo!==undefined) return state.meta.logo||null; // 已定义（含明确置空）：以云端为准
+      return localStorage.getItem('hw_logo')||null;                              // 未定义：回退本设备旧头像
+    }catch(e){return null;}
+  }
+  // 渲染头像（在初始化、云同步拉取、导入备份后都要调用）
+  function applyLogo(){
+    const box=document.getElementById('logoBox'),img=document.getElementById('logoImg'),
+          fb=document.getElementById('logoFallback'),reset=document.getElementById('logoReset');
+    if(!box)return;
+    const d=getLogo();
+    if(d){img.src=d;img.hidden=false;fb.hidden=true;reset.hidden=false;
+      try{const f=document.querySelector('link[rel="icon"]');if(f)f.href=d;}catch(e){}
+    }else{img.hidden=true;fb.hidden=false;reset.hidden=true;img.removeAttribute('src');}
+  }
+
+  // ---- 左上角头像：一次上传长期保存（存 state.meta.logo，随云同步 + 导出备份跨设备） ----
   (function(){
     const box=document.getElementById('logoBox'),img=document.getElementById('logoImg'),
           fb=document.getElementById('logoFallback'),file=document.getElementById('logoFile'),
           reset=document.getElementById('logoReset');
-    function apply(d){
-      if(d){img.src=d;img.hidden=false;fb.hidden=true;reset.hidden=false;
-        try{const f=document.querySelector('link[rel="icon"]');if(f)f.href=d;}catch(e){}}
-      else{img.hidden=true;fb.hidden=false;reset.hidden=true;img.removeAttribute('src');}
-    }
     box.addEventListener('click',e=>{ if(e.target===reset)return; file.click(); });
-    reset.addEventListener('click',e=>{ e.stopPropagation(); try{localStorage.removeItem('hw_logo');}catch(e){} apply(null); toast('已恢复默认图标'); });
+    reset.addEventListener('click',e=>{ e.stopPropagation();
+      try{localStorage.removeItem('hw_logo'); if(!state.meta)state.meta={}; state.meta.logo='';}catch(e){}
+      applyLogo(); save(); toast('已恢复默认图标'); });
     file.addEventListener('change',()=>{
       const f0=file.files&&file.files[0]; if(!f0)return;
       const r=new FileReader();
@@ -1357,12 +1383,13 @@
         im.onload=()=>{ const max=200; let w=im.width,h=im.height; const s=Math.min(1,max/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
           const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(im,0,0,w,h);
           let url; try{url=c.toDataURL('image/jpeg',0.85);}catch(e){url=r.result;}
-          try{localStorage.setItem('hw_logo',url);}catch(e){toast('保存失败：图片过大（存储配额）');return;}
-          apply(url); toast('头像已更新并保存'); };
+          try{localStorage.setItem('hw_logo',url);}catch(e){}
+          try{if(!state.meta)state.meta={}; state.meta.logo=url;}catch(e){}
+          applyLogo(); save(); toast('头像已更新并保存'); };
         im.onerror=()=>toast('图片读取失败'); im.src=r.result; };
       r.onerror=()=>toast('文件读取失败'); r.readAsDataURL(f0); file.value='';
     });
-    try{ apply(localStorage.getItem('hw_logo')||null); }catch(e){ apply(null); }
+    applyLogo();
   })();
 
   if(state.goals.length===0 && state.weeks.length===0 && state.todos.length===0){

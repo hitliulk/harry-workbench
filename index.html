@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Harry台">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233B82F6'/%3E%3Cg fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='12' y='12' width='8' height='8' rx='1.5'/%3E%3Crect x='5' y='14.5' width='5' height='3' rx='1'/%3E%3Crect x='22' y='14.5' width='5' height='3' rx='1'/%3E%3Cpath d='M16 12V8'/%3E%3Ccircle cx='16' cy='6.5' r='1.6' fill='white' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root{
     --bg:#0A0E23;
@@ -200,6 +201,33 @@
   .backup-hint{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:var(--gold);font-size:12px;padding:9px 13px;border-radius:10px;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
   .backup-hint svg{width:15px;height:15px;flex-shrink:0;}
 
+  /* 新增：日期横条信息 chips（限行 / 天气 / 年内天数） */
+  .datebar .db-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .db-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);font-size:13px;color:#dbeafe;font-weight:600;}
+  .db-chip.limit{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.4);color:#fcd34d;}
+  .db-chip.nolimit{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#86efac;}
+  .db-chip.weather{background:rgba(34,211,238,.14);border-color:rgba(34,211,238,.4);color:#a5f3fc;}
+
+  /* 周任务：显示已完成 开关 */
+  .ph-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .switch-wrap{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--txt2);user-select:none;}
+  .switch-wrap input{display:none;}
+  .switch{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;transition:.2s;flex-shrink:0;}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;}
+  .switch-wrap input:checked + .switch{background:linear-gradient(135deg,var(--blue),var(--indigo));}
+  .switch-wrap input:checked + .switch::after{transform:translateX(16px);}
+  .switch-label{font-weight:600;}
+
+  /* 待办：优先级背景色 + 延期高亮 */
+  .card.pri-P0{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);}
+  .card.pri-P1{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45);}
+  .card.pri-P2{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.45);}
+  .card.overdue{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.6);box-shadow:0 0 0 1px rgba(239,68,68,.25);}
+
+  /* 页脚版本号 */
+  .app-footer{text-align:center;color:var(--txt3);font-size:12px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);}
+  .app-footer #appVer{color:var(--cyan);font-weight:700;}
+
   @media(max-width:640px){
     .wrap{padding:14px 12px 36px;}
     .brand h1{font-size:17px;}
@@ -214,8 +242,15 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <div class="logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/></svg>
+      <div class="logo" title="智星空间 Smart Satellite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9.5" width="6" height="6" rx="1.2"/>
+          <rect x="3.2" y="11.5" width="4.2" height="2.6" rx=".6"/>
+          <rect x="16.6" y="11.5" width="4.2" height="2.6" rx=".6"/>
+          <path d="M12 9.5V5.6"/>
+          <circle cx="12" cy="4.4" r="1.3" fill="#fff" stroke="none"/>
+          <path d="M14.6 4.8a3 3 0 0 1 0 5" opacity=".75"/>
+        </svg>
       </div>
       <div>
         <h1>Harry的工作台</h1>
@@ -239,7 +274,11 @@
       <span class="db-date" id="dbDate">—</span>
       <span class="db-week" id="dbWeek"></span>
     </div>
-    <div class="db-right" id="dbExtra"></div>
+    <div class="db-right">
+      <span class="db-chip" id="dbLimit" title="北京市工作日尾号限行（五环路以内，7–20时；数据依据京政发〔2026〕5号，法定节假日及调休上班日可能不同）">限行计算中…</span>
+      <span class="db-chip weather" id="dbWeather">天气获取中…</span>
+      <span class="db-chip" id="dbExtra"></span>
+    </div>
   </div>
   <div class="pathbar" id="pathbar">导出路径：<b id="pathName">未设置（导出到浏览器默认下载目录）</b></div>
   <div class="syncbar">云同步：<span id="syncStatus" class="sync-off">未连接</span></div>
@@ -286,7 +325,14 @@
   <section class="tabpane hidden" id="pane-goals">
     <div class="panel">
       <div class="panel-head">
-        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>月目标</h2>
+        <div class="ph-left">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>月目标</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的月目标（默认隐藏并置底）">
+            <input type="checkbox" id="showDoneGoals">
+            <span class="switch"></span>
+            <span class="switch-label">显示已完成</span>
+          </label>
+        </div>
         <button class="btn btn-primary btn-sm" id="addGoal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建目标</button>
       </div>
       <div id="goalList"></div>
@@ -297,7 +343,14 @@
   <section class="tabpane hidden" id="pane-weeks">
     <div class="panel">
       <div class="panel-head">
-        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>周任务</h2>
+        <div class="ph-left">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>周任务</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的周任务（默认隐藏并置底）">
+            <input type="checkbox" id="showDoneWeeks">
+            <span class="switch"></span>
+            <span class="switch-label">显示已完成</span>
+          </label>
+        </div>
         <button class="btn btn-primary btn-sm" id="addWeek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建周任务</button>
       </div>
       <div id="weekList"></div>
@@ -308,7 +361,14 @@
   <section class="tabpane hidden" id="pane-todos">
     <div class="panel">
       <div class="panel-head">
-        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>每日待办</h2>
+        <div class="ph-left">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>每日待办</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的待办（默认隐藏并置底）">
+            <input type="checkbox" id="showDoneTodos">
+            <span class="switch"></span>
+            <span class="switch-label">显示已完成</span>
+          </label>
+        </div>
         <button class="btn btn-primary btn-sm" id="addTodo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建待办</button>
       </div>
       <div id="todoList"></div>
@@ -340,6 +400,7 @@
     </div>
   </section>
 </div>
+<footer class="app-footer">Harry的工作台 · <span id="appVer">v1.5.0</span></footer>
 
 <!-- Modal -->
 <div class="overlay" id="overlay">
@@ -352,6 +413,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
+  const APP_VERSION="1.5.0";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -359,6 +421,9 @@
 
   // ---- state ----
   let state={annual:[],goals:[],weeks:[],todos:[],meta:{}};
+  let showDoneWeeks=false; // 周任务：是否显示已完成（默认隐藏；本地持久化，不随云同步）
+  let showDoneGoals=false; // 月目标：是否显示已完成
+  let showDoneTodos=false; // 每日待办：是否显示已完成
 
   function load(){
     try{const r=localStorage.getItem(KEY);if(r){state=JSON.parse(r);}}catch(e){}
@@ -385,15 +450,48 @@
     }
   }
   // 顶部今日日期横条
+  const WMO={0:'晴',1:'晴间多云',2:'多云',3:'阴',45:'雾',48:'雾凇',51:'小毛雨',53:'毛毛雨',55:'毛毛雨',56:'冻毛雨',57:'冻毛雨',61:'小雨',63:'中雨',65:'大雨',66:'冻雨',67:'冻雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'阵雨',81:'阵雨',82:'强阵雨',85:'阵雪',86:'强阵雪',95:'雷阵雨',96:'雷阵雨冰雹',99:'雷阵雨冰雹'};
+  // 北京尾号限行（依据京政发〔2026〕5号，2026-03-30 至 2027-03-28 分四阶段轮换；周末不限行）
+  const BJ_LIMIT_PERIODS=[
+    {start:'2026-03-30',end:'2026-06-28',p:['2和7','3和8','4和9','5和0','1和6']},
+    {start:'2026-06-29',end:'2026-09-27',p:['1和6','2和7','3和8','4和9','5和0']},
+    {start:'2026-09-28',end:'2026-12-27',p:['5和0','1和6','2和7','3和8','4和9']},
+    {start:'2026-12-28',end:'2027-03-28',p:['4和9','5和0','1和6','2和7','3和8']}
+  ];
+  function bjLimit(date){
+    const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+    const ymd=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dw=date.getDay(); // 0=周日 … 6=周六
+    if(dw===0||dw===6)return {restricted:false,cls:'nolimit',text:'今日不限行（周末）'};
+    const per=BJ_LIMIT_PERIODS.find(p=>ymd>=p.start&&ymd<=p.end);
+    if(!per)return {restricted:false,cls:'nolimit',text:'限行规则未覆盖'};
+    return {restricted:true,cls:'limit',text:`限行尾号 ${per.p[dw-1]}`};
+  }
+  async function fetchWeather(){
+    const el=document.getElementById('dbWeather');
+    if(!el)return;
+    el.textContent='天气获取中…';
+    try{
+      const url='https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074&current=temperature_2m,weather_code,wind_speed_10m&timezone=Asia%2FShanghai';
+      const r=await fetch(url);if(!r.ok)throw 0;
+      const j=await r.json();const c=j.current;
+      const desc=WMO[c.weather_code]||'未知';
+      const t=Math.round(c.temperature_2m);
+      const w=Math.round(c.wind_speed_10m);
+      el.textContent=`${desc} ${t}° · 风 ${w}km/h`;
+    }catch(e){el.textContent='天气获取失败';}
+  }
   function renderDateBar(){
     try{
       const d=new Date();
       const wd=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
       const y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
-      const dbDate=document.getElementById('dbDate'),dbWeek=document.getElementById('dbWeek'),dbExtra=document.getElementById('dbExtra');
+      const dbDate=document.getElementById('dbDate'),dbWeek=document.getElementById('dbWeek'),dbExtra=document.getElementById('dbExtra'),dbLimit=document.getElementById('dbLimit');
       if(dbDate)dbDate.textContent=`${y}年${m}月${day}日`;
       if(dbWeek)dbWeek.textContent=wd;
       if(dbExtra){const start=new Date(y,0,1);const doy=Math.floor((d-start)/86400000)+1;dbExtra.textContent=`${y} 年第 ${doy} 天`;}
+      if(dbLimit){const r=bjLimit(d);dbLimit.textContent=r.text;dbLimit.className='db-chip '+(r.cls||'limit');}
+      fetchWeather();
     }catch(e){}
   }
   function save(){
@@ -649,7 +747,9 @@
     const box=document.getElementById('goalList');
     if(state.goals.length===0){box.innerHTML=emptyState('还没有月目标，点击右上角「新建目标」开始拆解');return;}
     // 已完成月计划沉底（与待办/周任务一致）
-    const ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    let ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    if(!showDoneGoals)ordered=ordered.filter(g=>g.status!=='done'); // 默认隐藏已完成
+    if(ordered.length===0){box.innerHTML=emptyState('月目标已全部完成（可在右上角开关中显示已完成）');return;}
     box.innerHTML=ordered.map(g=>{
       const ws=goalWeeks(g);
       const p=goalProgress(g);
@@ -729,7 +829,9 @@
     const statusMap={todo:['chip-gray','待办'],doing:['chip-cyan','进行中'],done:['chip-green','已完成']};
     const priMap={P0:['chip-red','P0'],P1:['chip-amber','P1'],P2:['chip-gray','P2']};
     const statusOrder={todo:0,doing:1,done:2};
-    const weekList=[...state.weeks].sort((a,b)=>(statusOrder[a.status]||9)-(statusOrder[b.status]||9));
+    let weekList=[...state.weeks].sort((a,b)=>(statusOrder[a.status]||9)-(statusOrder[b.status]||9));
+    if(!showDoneWeeks)weekList=weekList.filter(w=>w.status!=='done'); // 默认隐藏已完成
+    if(weekList.length===0){box.innerHTML=emptyState('已完成的周任务已隐藏（勾选上方「显示已完成」开关可查看）');return;}
     box.innerHTML=weekList.map(w=>{
       const g=state.goals.find(x=>x.id===w.goalId);
       const p=weekProgress(w);
@@ -765,19 +867,21 @@
     const box=document.getElementById('todoList');
     if(state.todos.length===0){box.innerHTML=emptyState('还没有每日待办，点击右上角「新建待办」');return;}
     const priMap={P0:['chip-red','P0'],P1:['chip-amber','P1'],P2:['chip-gray','P2']};
-    const sorted=[...state.todos].sort((a,b)=>{
+    let sorted=[...state.todos].sort((a,b)=>{
       const ad=a.status==='done', bd=b.status==='done';
       if(ad!==bd)return ad?1:-1;            // 未完成排上面，已完成沉底
       if(a.date!==b.date)return a.date<b.date?-1:1;
       const pr={P0:0,P1:1,P2:2};return (pr[a.priority]||9)-(pr[b.priority]||9);
     });
+    if(!showDoneTodos)sorted=sorted.filter(t=>t.status!=='done'); // 默认隐藏已完成
+    if(sorted.length===0){box.innerHTML=emptyState('每日待办已全部完成（可在右上角开关中显示已完成）');return;}
     box.innerHTML=sorted.map(t=>{
       const w=state.weeks.find(x=>x.id===t.weekId);
       const g=w?state.goals.find(x=>x.id===w.goalId):null;
       const pr=priMap[t.priority]||priMap.P1;
       const done=t.status==='done';
       const overdue=t.carriedOver && !done;
-      return `<div class="card" style="${done?'opacity:.55;':''}">
+      return `<div class="card ${overdue?'overdue':''} pri-${t.priority||'P1'}" style="${done?'opacity:.55;':''}">
         <div class="card-top">
           <div class="card-title" style="${done?'text-decoration:line-through;':''}">${esc(t.title)}</div>
           ${overdue?'<span class="chip chip-red">逾期</span>':done?'<span class="chip chip-green">已完成</span>':''}
@@ -1153,6 +1257,30 @@
   document.getElementById('addWeek').onclick=()=>weekForm();
   document.getElementById('addTodo').onclick=()=>todoForm();
 
+  // 周任务：显示已完成 开关（本地持久化，不随云同步）
+  (function(){
+    const sw=document.getElementById('showDoneWeeks');
+    if(!sw)return;
+    sw.checked=showDoneWeeks;
+    sw.onchange=()=>{showDoneWeeks=sw.checked;try{localStorage.setItem('hw_show_done_weeks',sw.checked?'1':'0');}catch(e){}renderWeeks();};
+  })();
+
+  // 月目标：显示已完成 开关
+  (function(){
+    const sw=document.getElementById('showDoneGoals');
+    if(!sw)return;
+    sw.checked=showDoneGoals;
+    sw.onchange=()=>{showDoneGoals=sw.checked;try{localStorage.setItem('hw_show_done_goals',sw.checked?'1':'0');}catch(e){}renderGoals();};
+  })();
+
+  // 每日待办：显示已完成 开关
+  (function(){
+    const sw=document.getElementById('showDoneTodos');
+    if(!sw)return;
+    sw.checked=showDoneTodos;
+    sw.onchange=()=>{showDoneTodos=sw.checked;try{localStorage.setItem('hw_show_done_todos',sw.checked?'1':'0');}catch(e){}renderTodos();};
+  })();
+
   // ---- 示例数据 ----
   function seed(){
     const ag=uid(),g1=uid(),g2=uid(),w1=uid(),w2=uid(),w3=uid(),w4=uid();
@@ -1195,11 +1323,15 @@
   // ---- 初始化 ----
   initExportDir();
   load();
+  try{showDoneWeeks=localStorage.getItem('hw_show_done_weeks')==='1';}catch(e){}
+  try{showDoneGoals=localStorage.getItem('hw_show_done_goals')==='1';}catch(e){}
+  try{showDoneTodos=localStorage.getItem('hw_show_done_todos')==='1';}catch(e){}
   if(state.goals.length===0 && state.weeks.length===0 && state.todos.length===0){
     seed();
   }
   carryOver();
   renderAll();
+  const av=document.getElementById('appVer');if(av)av.textContent='v'+APP_VERSION;
 
   // 云同步：先尝试从 IndexedDB 恢复被系统回收清空的凭据，再自动登录并拉取最新
   hydrateCreds().then(()=>{

@@ -420,7 +420,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.5.2";
+  const APP_VERSION="1.5.3";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -1028,11 +1028,14 @@
 
   function goalOptions(sel){
     if(state.goals.length===0)return '<option value="">（请先建月目标）</option>';
-    return state.goals.map(g=>`<option value="${g.id}" ${sel===g.id?'selected':''}>${esc(g.title)}</option>`).join('');
+    // 已完成月目标仍要出现在下一级选单中：排到末尾并标注，避免被误以为缺失
+    const ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    return ordered.map(g=>`<option value="${g.id}" ${sel===g.id?'selected':''}>${esc(g.title)}${g.status==='done'?'（已完成）':''}</option>`).join('');
   }
   function weekOptions(sel){
     if(state.weeks.length===0)return '<option value="">（请先建周任务）</option>';
-    return state.weeks.map(w=>`<option value="${w.id}" ${sel===w.id?'selected':''}>${esc(w.title)}</option>`).join('');
+    const ordered=state.weeks.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    return ordered.map(w=>`<option value="${w.id}" ${sel===w.id?'selected':''}>${esc(w.title)}${w.status==='done'?'（已完成）':''}</option>`).join('');
   }
   function annualOptions(sel){
     if(state.annual.length===0)return '<option value="">（请先建年度目标）</option>';

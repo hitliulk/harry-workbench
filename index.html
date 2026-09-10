@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <!-- Harry的工作台 PWA 版：GitHub Pages 托管 + GitHub Gist 跨设备云同步 -->
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<html lang="zh-CN" data-page-node-id="mxOt5soxcEQAm5gepdigZ3">
+<head data-page-node-id="4sacbvTlLfVkb676meRtHN">
+<meta charset="UTF-8" data-page-node-id="ipq3bvD1pYzGepf9qI2LZ7">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" data-page-node-id="t6Kup9Q6eX82pThvOPiO3Y">
 <title>Harry的工作台</title>
-<meta name="theme-color" content="#0A0E23">
-<meta name="description" content="年/月/周/日目标拆解与完成率看板，支持手机安装与跨设备云同步">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Harry台">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233B82F6'/%3E%3Cg fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='12' y='12' width='8' height='8' rx='1.5'/%3E%3Crect x='5' y='14.5' width='5' height='3' rx='1'/%3E%3Crect x='22' y='14.5' width='5' height='3' rx='1'/%3E%3Cpath d='M16 12V8'/%3E%3Ccircle cx='16' cy='6.5' r='1.6' fill='white' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="theme-color" content="#0A0E23" data-page-node-id="vC5wFtA2bQKoP5wExtnPta">
+<meta name="description" content="年/月/周/日目标拆解与完成率看板，支持手机安装与跨设备云同步" data-page-node-id="1ruTU6DCgdhzCYu0YDgydL">
+<meta name="apple-mobile-web-app-capable" content="yes" data-page-node-id="0bnuFFgyGXxHCP0jtP4hgs">
+<meta name="mobile-web-app-capable" content="yes" data-page-node-id="94Y3mq9H3DqyNz6u0LSifr">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" data-page-node-id="PWNltj4WGOzCN6xhqlWs9H">
+<meta name="apple-mobile-web-app-title" content="Harry台" data-page-node-id="LsTH2MTTTSAV8nQ3d9GX7v">
+<link rel="manifest" href="manifest.webmanifest" data-page-node-id="5VuMywbLytrsYKvVY9BND5">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" data-page-node-id="XVrcmJtBH3zNVRpFBIOAxI">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233B82F6'/%3E%3Cg fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='12' y='12' width='8' height='8' rx='1.5'/%3E%3Crect x='5' y='14.5' width='5' height='3' rx='1'/%3E%3Crect x='22' y='14.5' width='5' height='3' rx='1'/%3E%3Cpath d='M16 12V8'/%3E%3Ccircle cx='16' cy='6.5' r='1.6' fill='white' stroke='none'/%3E%3C/g%3E%3C/svg%3E" data-page-node-id="4H3MFU4JbFryMR8YUel5sK">
 <style>
   :root{
     --bg:#0A0E23;
@@ -240,187 +240,246 @@
     .hbtns .btn span.lbl{display:none;}
   }
 </style>
+<script>
+// 早期错误兜底（独立脚本，先于主程序注册，确保任意脚本错误都显示而非白屏）
+(function(){
+  if(window.__showErr)return;
+  function showErr(msg){
+    try{
+      var d=document.getElementById('__errBox');
+      if(!d){d=document.createElement('div');d.id='__errBox';
+        d.style.cssText='position:fixed;left:10px;right:10px;top:10px;z-index:2147483647;background:#1a0408;color:#ffc2c2;border:1px solid #ef4444;border-radius:10px;padding:12px 14px;font:12px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:80vh;overflow:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)';
+        (document.body||document.documentElement).appendChild(d);}
+      d.textContent='⚠ 工作台脚本出错（已拦截，不会白屏）：\n'+msg;
+    }catch(e){}
+  }
+  window.__showErr=showErr;
+  window.addEventListener('error',function(e){
+    showErr((e&&e.message?e.message:'unknown error')+'\n'+(e&&e.filename?('@ '+e.filename+':'+e.lineno+':'+e.colno):'')+'\n'+(e&&e.error&&e.error.stack?e.error.stack:''));
+  });
+  window.addEventListener('unhandledrejection',function(e){
+    var r=e&&e.reason;showErr('未处理的 Promise 拒绝：\n'+(r&&r.stack?r.stack:(r&&r.message?r.message:String(r))));
+  });
+})();
+</script>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <div class="logo logo-btn" id="logoBox" title="点击上传你的照片作为头像（一次上传长期保存）">
-        <img id="logoImg" alt="头像" hidden>
-        <span id="logoFallback">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9.5" width="6" height="6" rx="1.2"/>
-            <rect x="3.2" y="11.5" width="4.2" height="2.6" rx=".6"/>
-            <rect x="16.6" y="11.5" width="4.2" height="2.6" rx=".6"/>
-            <path d="M12 9.5V5.6"/>
-            <circle cx="12" cy="4.4" r="1.3" fill="#fff" stroke="none"/>
-            <path d="M14.6 4.8a3 3 0 0 1 0 5" opacity=".75"/>
+<body data-page-node-id="WDb3hP5CRP6v2oFjvlPt5C">
+<noscript><div style="padding:40px;color:#E6ECFF;font-family:sans-serif;line-height:1.7">本应用是纯前端页面，需要启用 JavaScript 才能运行。<br>若在 WorkBuddy 预览中看到此提示，说明预览面板未执行脚本——请改用本机浏览器打开：双击 <b>serve.cmd</b>，它会启动本地服务并在浏览器打开 <b>http://localhost:5173</b>。</div></noscript>
+<div class="wrap" data-page-node-id="C1MU7GjDHBtnJZP9LRsgtG">
+  <header data-page-node-id="EU5vxVBMqfFFWKGgYfFMNI">
+    <div class="brand" data-page-node-id="47NgDmlVeaG21McGoTdE7d">
+      <div class="logo logo-btn" id="logoBox" title="点击上传你的照片作为头像（一次上传长期保存）" data-page-node-id="pWRthf7NhNg9L5zwyxY2hu">
+        <img id="logoImg" alt="头像" hidden data-page-node-id="1rEZfPj9FU0OP8KUqdsQTR">
+        <span id="logoFallback" data-page-node-id="jEIlGnV76RUESGd0QeAeyD">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="GFW4l8inmFL3e3EtTZ7VJL">
+            <rect x="9" y="9.5" width="6" height="6" rx="1.2" data-page-node-id="tkIqxaOOwc35W7TpygQFyS"/>
+            <rect x="3.2" y="11.5" width="4.2" height="2.6" rx=".6" data-page-node-id="zH4NLvAovRDwuEsESLyeFu"/>
+            <rect x="16.6" y="11.5" width="4.2" height="2.6" rx=".6" data-page-node-id="EQzjUhu1AIsUqnL0vHTrPa"/>
+            <path d="M12 9.5V5.6" data-page-node-id="tnTPgcAoWlZuQbCYE5jdgF"/>
+            <circle cx="12" cy="4.4" r="1.3" fill="#fff" stroke="none" data-page-node-id="FzdtyrO3PxKWrPN6PxWMnC"/>
+            <path d="M14.6 4.8a3 3 0 0 1 0 5" opacity=".75" data-page-node-id="J2N9hCs6eMf0XKgDuJYR1d"/>
           </svg>
         </span>
       </div>
-      <input type="file" id="logoFile" accept="image/*" hidden>
-      <div>
-        <h1>Harry的工作台</h1>
-        <div class="sub">
-          <span class="ws-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>工作目录：Harry的工作台</span>
+      <input type="file" id="logoFile" accept="image/*" hidden data-page-node-id="6CcQLFahMocZPATB6ZCpD0">
+      <div data-page-node-id="UyHo4EkHHXR0BAFHK4AGno">
+        <h1 data-page-node-id="nxLHNkVmqO3bucEZlypKFr">Harry的工作台</h1>
+        <div class="sub" data-page-node-id="H2510HaDFl43ZAFLiwt5cg">
+          <span class="ws-chip" data-page-node-id="LM3S6PCPBz3L22cIUZtjyR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Odl73YUSDaU70MmRnzj2AD"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" data-page-node-id="4NBbWmVCf6nuDiwqRf0Dii"/></svg>工作目录：Harry的工作台</span>
           月目标 · 周任务 · 每日待办 · 完成率仪表盘
         </div>
       </div>
     </div>
-    <div class="hbtns">
-      <button class="btn btn-ghost" id="btnSync" title="云同步设置（电脑/手机互通）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 12v6M9 15l3 3 3-3" opacity=".0"/><path d="M8 16l4 4 4-4M12 4v8M9 9l3-3 3 3" opacity=".0"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3"/></svg><span class="lbl">云同步</span></button>
-      <button class="btn btn-ghost" id="btnSetPath" title="设置备份文件保存的文件夹"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><circle cx="12" cy="13" r="2.4"/><path d="M12 10.6V8M12 15.4V18M9.6 13H7M15.4 13H18"/></svg><span class="lbl">导出路径</span></button>
-      <button class="btn btn-ghost" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="lbl">导出备份</span></button>
-      <button class="btn btn-ghost" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg><span class="lbl">导入恢复</span></button>
-      <input type="file" id="fileImport" accept=".json" class="hidden">
+    <div class="hbtns" data-page-node-id="OIKAUhVyIGnkojgd1GVLQE">
+      <button class="btn btn-ghost" id="btnSync" title="云同步设置（电脑/手机互通）" data-page-node-id="i6epIYLHf3AsUR5w4Wcy4i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="zWYm0bNBpObkqtBtoIJoCY"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-page-node-id="xgeAt79UfGxHiF8MbIAjWc"/><path d="M12 12v6M9 15l3 3 3-3" opacity=".0" data-page-node-id="78zylmWjQTBPs974sQnm7W"/><path d="M8 16l4 4 4-4M12 4v8M9 9l3-3 3 3" opacity=".0" data-page-node-id="L0OXDGxjq00Q2TkdpyxWdO"/><path d="M7 14a5 5 0 0 1 9.3-2.6L20 14M20 14l-3 3M20 14l3-3" data-page-node-id="jPmazVk6pyoNN7IS8dEQti"/></svg><span class="lbl" data-page-node-id="4Q3Qs7EwxqZM1J1ePhaTEO">云同步</span></button>
+      <button class="btn btn-ghost" id="btnSetPath" title="设置备份文件保存的文件夹" data-page-node-id="QZWDMArKGr7ItuzfyS9eu9"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="oD0rAmoIQo8yqlGQsI2JQv"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" data-page-node-id="swXYbu2Jr2ae4TcHYj5lHG"/><circle cx="12" cy="13" r="2.4" data-page-node-id="r6Y0sEA2nAbhhtZqy0wCHx"/><path d="M12 10.6V8M12 15.4V18M9.6 13H7M15.4 13H18" data-page-node-id="rgRrAVx4APuokCb20uyEHb"/></svg><span class="lbl" data-page-node-id="dNqTxlcfT40IzuusUOhxv4">导出路径</span></button>
+      <button class="btn btn-ghost" id="btnExport" data-page-node-id="nsYeCtUS5LW2X0FFUt91LW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Y8SuyrdhESdXW5I2weypHW"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-page-node-id="7BCjtN6Zj2mtonWt34JdRC"/><path d="M7 10l5 5 5-5" data-page-node-id="XC62DHqCKEQjl9tUZLESoQ"/><path d="M12 15V3" data-page-node-id="8KYKXgflOYnKN6cjIkJkbH"/></svg><span class="lbl" data-page-node-id="SUpCypr8BrTXUT64OkaDjz">导出备份</span></button>
+      <button class="btn btn-ghost" id="btnImport" data-page-node-id="aZ7XkzogE8snV184DQUVY6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="HuWpAE2cPTVKDivcWJNRyG"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" data-page-node-id="baQ4qW12gZXkcHfSvDKCYQ"/><path d="M7 9l5-5 5 5" data-page-node-id="BR6u7tOC98av1vG0daN5Rx"/><path d="M12 4v12" data-page-node-id="IhFPE2MWWQ5nIEDUEmZs4D"/></svg><span class="lbl" data-page-node-id="6wcDB0w6FdDsVTa1ZHJxkT">导入恢复</span></button>
+      <input type="file" id="fileImport" accept=".json" class="hidden" data-page-node-id="zItb30GVWy2ABSlmbLOhuo">
     </div>
   </header>
-  <div class="datebar">
-    <div class="db-left">
-      <span class="db-label">今 日</span>
-      <span class="db-date" id="dbDate">—</span>
-      <span class="db-week" id="dbWeek"></span>
+  <div class="datebar" data-page-node-id="KYfBzF7aZ8ZbSjsL7rb4pm">
+    <div class="db-left" data-page-node-id="4u4qEaX1jxMTavrfaNx18Q">
+      <span class="db-label" data-page-node-id="NB8q0irAOf8Fd966qCwnY4">今 日</span>
+      <span class="db-date" id="dbDate" data-page-node-id="qWPTnNmEMXSu71atZoKPh4">—</span>
+      <span class="db-week" id="dbWeek" data-page-node-id="eUSmJFkpLV7bnpyekAIB2x"></span>
     </div>
-    <div class="db-right">
-      <span class="db-chip" id="dbLimit" title="北京市工作日尾号限行（五环路以内，7–20时；数据依据京政发〔2026〕5号，法定节假日及调休上班日可能不同）">限行计算中…</span>
-      <span class="db-chip weather" id="dbWeather">天气获取中…</span>
-      <span class="db-chip" id="dbExtra"></span>
+    <div class="db-right" data-page-node-id="4G8yN5sy3x7C810WuIROzc">
+      <span class="db-chip" id="dbLimit" title="北京市工作日尾号限行（五环路以内，7–20时；数据依据京政发〔2026〕5号，法定节假日及调休上班日可能不同）" data-page-node-id="fEc2bveuFKXrbgZiRpSbrl">限行计算中…</span>
+      <span class="db-chip weather" id="dbWeather" data-page-node-id="ia6rIVav1w6scHsTmrIab2">天气获取中…</span>
+      <span class="db-chip" id="dbExtra" data-page-node-id="1adlJsLB1R3AfrClDbx7pp"></span>
     </div>
   </div>
-  <div class="pathbar" id="pathbar">导出路径：<b id="pathName">未设置（导出到浏览器默认下载目录）</b></div>
-  <div class="syncbar">云同步：<span id="syncStatus" class="sync-off">未连接</span></div>
+  <div class="pathbar" id="pathbar" data-page-node-id="S7oZDApqC6bIcEQS0H7KHj">导出路径：<b id="pathName" data-page-node-id="GhzEyL5qscPe4Wu5xIBR2A">未设置（导出到浏览器默认下载目录）</b></div>
+  <div class="syncbar" data-page-node-id="55uTxeQKHxqAOUPNPYsx2T">云同步：<span id="syncStatus" class="sync-off" data-page-node-id="1oNmBpGHzqCycXPgrP1vRb">未连接</span></div>
 
   <!-- 今天要处理 -->
-  <section class="today">
-    <div class="today-header">
-      <div class="today-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        <span>今天要处理</span>
+  <section class="today" data-page-node-id="tXUdWTH7dtQrAldsl1R9JJ">
+    <div class="today-header" data-page-node-id="CNKYI95wlVJPfhLmD1lYuF">
+      <div class="today-title" data-page-node-id="rCdTFBVhO0bkuLN9PaiYAI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="FBLuzTTLflh3DLosinU5GC"><circle cx="12" cy="12" r="10" data-page-node-id="J8FyrH2ywpgEQDtjmxew7I"/><path d="M12 6v6l4 2" data-page-node-id="m2rve80EbpULbckbC4TXFD"/></svg>
+        <span data-page-node-id="ftJqS9tgjYnAC3xzdSxouD">今天要处理</span>
       </div>
-      <div class="today-count" id="todayCount">0 项</div>
+      <div class="today-count" id="todayCount" data-page-node-id="pqo335uxUgyUAGWphc9MCt">0 项</div>
     </div>
-    <div class="today-list" id="todayList"></div>
+    <div class="today-list" id="todayList" data-page-node-id="hDzK36QCye9PiG6JogMKra"></div>
   </section>
 
   <!-- 备份提示 -->
-  <div class="backup-hint hidden" id="backupHint">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-    <span id="backupHintText"></span>
+  <div class="backup-hint hidden" id="backupHint" data-page-node-id="ENC8FthfJsCXkXeWt8NaRu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="UMh7W33vw8yh8kNQnqmnUO"><path d="M12 9v4" data-page-node-id="rUz2oOCpCqPH45OVdDk3sZ"/><path d="M12 17h.01" data-page-node-id="JKz4sgWrJEaYUkJbnG744F"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" data-page-node-id="vfwNhc11Ooh6R2Eqvh5RKs"/></svg>
+    <span id="backupHintText" data-page-node-id="FvB6sIMi44ElQ2Fdfq9zsl"></span>
   </div>
 
   <!-- Tabs -->
-  <nav class="tabs">
-    <div class="tab active" data-tab="annual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 3v18M16 3v18"/></svg>年度目标</div>
-    <div class="tab" data-tab="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>月目标</div>
-    <div class="tab" data-tab="weeks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>周任务</div>
-    <div class="tab" data-tab="todos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>每日待办</div>
-    <div class="tab" data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l5-5"/></svg>仪表盘</div>
+  <nav class="tabs" data-page-node-id="dKeTPf2YQw3rz4zKbbholx">
+    <div class="tab active" data-tab="annual" data-page-node-id="JtV81cD4C8XxLOcAaTWhP3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="lFFfjIF9NuJAvIVS2Kjedi"><path d="M3 3v18h18" data-page-node-id="AWj2YErRkyr376gzjlxhpA"/><path d="M8 3v18M16 3v18" data-page-node-id="76PEi57lMPGEQJozfRL72z"/></svg>年度目标</div>
+    <div class="tab" data-tab="goals" data-page-node-id="ZBgMF9sEmAxI6WbbUjDNnW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="fCE7mEX5kKNW7jSIxErkH5"><path d="M3 3v18h18" data-page-node-id="oITx7EHwqWAaFcUjFplJdC"/><path d="M18 9l-5 5-3-3-3 3" data-page-node-id="zfEVO4JiL3pWPUalcxEFpz"/></svg>月目标</div>
+    <div class="tab" data-tab="weeks" data-page-node-id="x8vxq8gWCFUus0xXK8FXvJ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="I7jmGFvBqq3jTnscrbFCc5"><rect x="3" y="4" width="18" height="18" rx="2" data-page-node-id="DCJGMnzKagMF22nc0FSYRI"/><path d="M8 2v4M16 2v4M3 10h18" data-page-node-id="SVbggtho7tjTTRDd9rjzQo"/></svg>周任务</div>
+    <div class="tab" data-tab="todos" data-page-node-id="WXiYKQgGkXwRzs7e3HeeWV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="v2ZOJ8If8foHE2wADzQYq5"><path d="M9 11l3 3L22 4" data-page-node-id="XKkgi45B5laFGkSoZI0nQg"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" data-page-node-id="eZ7oyFried5X1xXHaB4IXS"/></svg>每日待办</div>
+    <div class="tab" data-tab="dash" data-page-node-id="CKP1RwMVXDEMiVB2Ld5V7f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="w3g43Lv6otz3fCWXp2Gb96"><circle cx="12" cy="12" r="10" data-page-node-id="A4g5AzIBpHm7ko2yY7oOJt"/><path d="M12 2a10 10 0 0 1 10 10" data-page-node-id="VNPttopPYVhfMbPAHFFqfe"/><path d="M12 12l5-5" data-page-node-id="CXissPeShjU3la82gDNwyx"/></svg>仪表盘</div>
   </nav>
 
   <!-- 年度目标 -->
-  <section class="tabpane" id="pane-annual">
-    <div class="panel">
-      <div class="panel-head">
-        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 3v18M16 3v18"/></svg>年度目标</h2>
-        <button class="btn btn-primary btn-sm" id="addAnnual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建年度目标</button>
+  <section class="tabpane" id="pane-annual" data-page-node-id="JLgjdmx5PKeZ9w3spJRmcy">
+    <div class="panel" data-page-node-id="jM1FNgGmmNLgI6f5Mcy5Mv">
+      <div class="panel-head" data-page-node-id="3V3iINZ2XIhSiPYHZLQlzw">
+        <h2 data-page-node-id="nKyh8dCrE0dlv2kckKoOB4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="EkhNwbneQn9f73rPLr4XY3"><path d="M3 3v18h18" data-page-node-id="Lf2KW4fU5DhsGZdD8tGquf"/><path d="M8 3v18M16 3v18" data-page-node-id="SXNNfbgBnQoDO8eNgYQaJN"/></svg>年度目标</h2>
+        <button class="btn btn-primary btn-sm" id="addAnnual" data-page-node-id="RLGLhEzMvZuuIYfYGygCSz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" data-page-node-id="xSZ5UFI5KKvQkVFrgkhuAJ"><path d="M12 5v14M5 12h14" data-page-node-id="oHrJdPLLDADGvWZwLZadoE"/></svg>新建年度目标</button>
       </div>
-      <div id="annualList"></div>
+      <div id="annualList" data-page-node-id="AjCyalNa4BuAreQwBZc2vH"></div>
     </div>
   </section>
 
   <!-- 月目标 -->
-  <section class="tabpane hidden" id="pane-goals">
-    <div class="panel">
-      <div class="panel-head">
-        <div class="ph-left">
-          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>月目标</h2>
-          <label class="switch-wrap" title="勾选后显示已完成的月目标（默认隐藏并置底）">
-            <input type="checkbox" id="showDoneGoals">
-            <span class="switch"></span>
-            <span class="switch-label">显示已完成</span>
+  <section class="tabpane hidden" id="pane-goals" data-page-node-id="cGNuwwT0sWHklVlRcMl4uW">
+    <div class="panel" data-page-node-id="t3ZZ9YFfNLGaxILNjZu7Mn">
+      <div class="panel-head" data-page-node-id="1CjJ5fsz83Xt3PaeMNbCF7">
+        <div class="ph-left" data-page-node-id="uAAGZSTKC4JMGfMbJaokZI">
+          <h2 data-page-node-id="2zqsSp3sL64T94e0vXf2wH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="n9yoy3cCQKyl5THX7Nhfn0"><path d="M3 3v18h18" data-page-node-id="psTyPONJ3ujX8koZVckhot"/><path d="M18 9l-5 5-3-3-3 3" data-page-node-id="OvGPmfWvP8pmYFyGBMnktW"/></svg>月目标</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的月目标（默认隐藏并置底）" data-page-node-id="kGQgpKPeqcepE2H9rKuVFo">
+            <input type="checkbox" id="showDoneGoals" data-page-node-id="oDs5tEi2iya8DYQboWOv1e">
+            <span class="switch" data-page-node-id="fGhlUZSWordMizuCtV2Jmv"></span>
+            <span class="switch-label" data-page-node-id="m68QzQlTpFSiHTh7AKb7ev">显示已完成</span>
           </label>
         </div>
-        <button class="btn btn-primary btn-sm" id="addGoal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建目标</button>
+        <button class="btn btn-primary btn-sm" id="addGoal" data-page-node-id="EzuYsGTpm9wy46u8B1hEkA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" data-page-node-id="DWGqEKaACBWJx3ihyDQIzb"><path d="M12 5v14M5 12h14" data-page-node-id="MzWvWc9YCBZKhXjT88vpgc"/></svg>新建目标</button>
       </div>
-      <div id="goalList"></div>
+      <div id="goalList" data-page-node-id="nHbEa1hBD6LFhwHty2vHhd"></div>
     </div>
   </section>
 
   <!-- 周任务 -->
-  <section class="tabpane hidden" id="pane-weeks">
-    <div class="panel">
-      <div class="panel-head">
-        <div class="ph-left">
-          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>周任务</h2>
-          <label class="switch-wrap" title="勾选后显示已完成的周任务（默认隐藏并置底）">
-            <input type="checkbox" id="showDoneWeeks">
-            <span class="switch"></span>
-            <span class="switch-label">显示已完成</span>
+  <section class="tabpane hidden" id="pane-weeks" data-page-node-id="LJtMEC7Q1UPjWpasDOf5GD">
+    <div class="panel" data-page-node-id="ZVQF6Qvxwa6b5O7Mt4D8wH">
+      <div class="panel-head" data-page-node-id="QK1QhdOnnmPwfpVTfx3mnF">
+        <div class="ph-left" data-page-node-id="2sm0TwMCLbsjOSd8qVDyCo">
+          <h2 data-page-node-id="hg2uQ0tAHigtNemu8DQSJB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="8UDcEBTNncByPPaiRlyM8A"><rect x="3" y="4" width="18" height="18" rx="2" data-page-node-id="1sIehiB3UfFoNymVf1ZgQk"/><path d="M8 2v4M16 2v4M3 10h18" data-page-node-id="I3tlGoFmLdZRvcCaKWXYeq"/></svg>周任务</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的周任务（默认隐藏并置底）" data-page-node-id="GIGwwiIqgzhgmhMIFjDqEY">
+            <input type="checkbox" id="showDoneWeeks" data-page-node-id="rgBTXXrPeJA5PzxWi9RfcD">
+            <span class="switch" data-page-node-id="O3VHu3LfiEYsi2iilDbH6S"></span>
+            <span class="switch-label" data-page-node-id="NZN9ys0qM6feUyTijIf8Va">显示已完成</span>
           </label>
         </div>
-        <button class="btn btn-primary btn-sm" id="addWeek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建周任务</button>
+        <button class="btn btn-primary btn-sm" id="addWeek" data-page-node-id="ohUGmvJXPJFTBtUlcAK5XO"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" data-page-node-id="u7G5ofkDgRBmopn8jkAEDj"><path d="M12 5v14M5 12h14" data-page-node-id="uA0hL16NTLBXRhAQOQCZem"/></svg>新建周任务</button>
       </div>
-      <div id="weekList"></div>
+      <div id="weekList" data-page-node-id="WzGVDHTYjxUyKasG8bzASJ"></div>
     </div>
   </section>
 
   <!-- 每日待办 -->
-  <section class="tabpane hidden" id="pane-todos">
-    <div class="panel">
-      <div class="panel-head">
-        <div class="ph-left">
-          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>每日待办</h2>
-          <label class="switch-wrap" title="勾选后显示已完成的待办（默认隐藏并置底）">
-            <input type="checkbox" id="showDoneTodos">
-            <span class="switch"></span>
-            <span class="switch-label">显示已完成</span>
+  <section class="tabpane hidden" id="pane-todos" data-page-node-id="nQlti0G3FYuUmTSCW0swDg">
+    <div class="panel" data-page-node-id="GURMrYjkExdaEmcqUjlF6n">
+      <div class="panel-head" data-page-node-id="CFUmVOzo4zlLAY865dxHW5">
+        <div class="ph-left" data-page-node-id="IET6em5h0MMzR3hIAdYhsu">
+          <h2 data-page-node-id="x1NRz96NCoHmUpUBZQfk9A"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Plj0nowwdapi55jaVlOxkC"><path d="M9 11l3 3L22 4" data-page-node-id="V6HRUXcqphYAK22bUQGsG2"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" data-page-node-id="Az9X0aG4zqGT8vLWC3FW4p"/></svg>每日待办</h2>
+          <label class="switch-wrap" title="勾选后显示已完成的待办（默认隐藏并置底）" data-page-node-id="PqPmEnYKTapjVJwjJsktdf">
+            <input type="checkbox" id="showDoneTodos" data-page-node-id="cs6MkOQvpVug2bYPGYjLMB">
+            <span class="switch" data-page-node-id="E3ZpevoxksCjDRdsbyZ58h"></span>
+            <span class="switch-label" data-page-node-id="4mP6OiJFz0NgFCcocVhzbf">显示已完成</span>
           </label>
         </div>
-        <button class="btn btn-primary btn-sm" id="addTodo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建待办</button>
+        <button class="btn btn-primary btn-sm" id="addTodo" data-page-node-id="KK9LkRz4BNidokCWNNDHgc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" data-page-node-id="iy4XzFH5fveTmMNLm4pu9A"><path d="M12 5v14M5 12h14" data-page-node-id="2Lzbe3Lukyt3JVlHcYMQVY"/></svg>新建待办</button>
       </div>
-      <div id="todoList"></div>
+      <div id="todoList" data-page-node-id="9ZDkT3hMs8VabQWSL3NREl"></div>
     </div>
   </section>
 
   <!-- 仪表盘 -->
-  <section class="tabpane hidden" id="pane-dash">
-    <div class="panel">
-      <div class="panel-head"><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l5-5"/></svg>完成率仪表盘</h2></div>
-      <div class="dash-grid" id="dashStats"></div>
-      <div class="ring-wrap" id="ringWrap"></div>
-      <div class="legend" id="ringLegend"></div>
+  <section class="tabpane hidden" id="pane-dash" data-page-node-id="svYKLkqcXXIDkxbcgYuueR">
+    <div class="panel" data-page-node-id="3znhft4XfFFdu0RHDoKLv9">
+      <div class="panel-head" data-page-node-id="VVZuvvLZS8YvjoBEpbcCFj"><h2 data-page-node-id="bo7qAdFtjVGKTngFvALteA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="SpgX47O9p0RGYjv1l6M42t"><circle cx="12" cy="12" r="10" data-page-node-id="e2SFSLw9oXUAM8bRR6SQ3X"/><path d="M12 2a10 10 0 0 1 10 10" data-page-node-id="Ctu8YcFehJIFqZBKMVNJrX"/><path d="M12 12l5-5" data-page-node-id="8DymTVMGpXMqpEjDCU9rE6"/></svg>完成率仪表盘</h2></div>
+      <div class="dash-grid" id="dashStats" data-page-node-id="3q5i7LGFe1Vk7TVthVablM"></div>
+      <div class="ring-wrap" id="ringWrap" data-page-node-id="ZaxShOjuX3caoNPpbSwkSU"></div>
+      <div class="legend" id="ringLegend" data-page-node-id="RAdpm2DyUq5P6l8C8St0Gy"></div>
 
-      <div class="dash-sec">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M19 9l-5 5-3-3-3 3"/></svg>近 7 日完成率趋势</h3>
-        <div id="trendChart"></div>
+      <div class="dash-sec" data-page-node-id="E1zLhcbHXIgAxUEqcJm6LC">
+        <h3 data-page-node-id="DEBZZJ39NUJmrY5QJAE631"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="8QOqNTu5w6J1EllqHx1qqM"><path d="M3 3v18h18" data-page-node-id="F2nrsJBmx3v41FM0hpdN9H"/><path d="M19 9l-5 5-3-3-3 3" data-page-node-id="PK4KGUwXMYNgeDaNar6NcV"/></svg>近 7 日完成率趋势</h3>
+        <div id="trendChart" data-page-node-id="Cqh0plPwHFeqFO78eUD8C3"></div>
       </div>
 
-      <div class="dash-sec">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>各月目标完成进度</h3>
-        <div id="goalBars"></div>
+      <div class="dash-sec" data-page-node-id="o9LpR6w1yj91GWsykY3ZDn">
+        <h3 data-page-node-id="jveSJESph4apBlCu8mqkOA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="b7BuSaajWZWHTY5afPRQlt"><rect x="3" y="3" width="18" height="18" rx="2" data-page-node-id="pJYUEKWbrEpVGJSWny6hu6"/><path d="M3 9h18M9 21V9" data-page-node-id="IHWjuEufHG02vfUlEjWmSK"/></svg>各月目标完成进度</h3>
+        <div id="goalBars" data-page-node-id="cBOaEGZzdWmnjWB7jeIUmG"></div>
       </div>
 
-      <div class="dash-sec">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 3v18M16 3v18"/></svg>各年度目标完成进度</h3>
-        <div id="annualBars"></div>
+      <div class="dash-sec" data-page-node-id="NIskNEpdHKQpRIhvigsc8P">
+        <h3 data-page-node-id="YziEaXPYSJDz0CTOwvMQs7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="rvLHZ9DGsqmF6JuYRnQjEj"><path d="M3 3v18h18" data-page-node-id="WTVIZb1ciDn0YrYGsVK9M0"/><path d="M8 3v18M16 3v18" data-page-node-id="1MOWMM2kDsd8mkhSijGQnj"/></svg>各年度目标完成进度</h3>
+        <div id="annualBars" data-page-node-id="ZfqGF4bhGowe8GmBbkVAcP"></div>
       </div>
     </div>
   </section>
 </div>
-<footer class="app-footer">Harry的工作台 · <span id="appVer">v1.5.0</span></footer>
+<footer class="app-footer" data-page-node-id="PxCLr5a6SlIngc8ecyVRKV">Harry的工作台 · <span id="appVer" data-page-node-id="hgc3YVPP3713giAcET8so4">v1.5.0</span></footer>
 
 <!-- Modal -->
-<div class="overlay" id="overlay">
-  <div class="modal" id="modal"></div>
+<div class="overlay" id="overlay" data-page-node-id="KIVPjLvObUrf8jVD4mxwCD">
+  <div class="modal" id="modal" data-page-node-id="jqO1I1o65TxlfvVqO9bYRW"></div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" data-page-node-id="LmPZYCC5QIBsQ22QTVyhRy"></div>
 
 <script>
+// 全局错误兜底：任何未捕获错误都显示在页面上，避免白屏看不到原因（便于排查 file:// 打开异常）
+(function(){
+  function showErr(msg){
+    try{
+      var d=document.createElement('div');
+      d.style.cssText='position:fixed;left:10px;right:10px;top:10px;z-index:99999;background:#1a0408;color:#ffc2c2;border:1px solid #ef4444;border-radius:10px;padding:12px 14px;font:12px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:62vh;overflow:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)';
+      d.textContent='⚠ 页面脚本出错（已拦截，不会白屏）：\n'+msg+'\n\n如用 file:// 双击打开，请改用本地服务器或线上版。';
+      (document.body||document.documentElement).appendChild(d);
+    }catch(e){}
+  }
+  window.__showErr=showErr;
+  window.addEventListener('error',function(e){
+    showErr((e&&e.message?e.message:'unknown error')+'\n'+(e&&e.filename?('@ '+e.filename+':'+e.lineno+':'+e.colno):'')+'\n'+(e&&e.error&&e.error.stack?e.error.stack:''));
+  });
+  window.addEventListener('unhandledrejection',function(e){
+    var r=e&&e.reason; showErr('未处理的 Promise 拒绝：\n'+(r&&r.stack?r.stack:(r&&r.message?r.message:String(r))));
+  });
+})();
+(function(){
+  // 环境垫片：部分受限 webview（如某些内置预览）会禁用 localStorage / IndexedDB，
+  // 直接访问即抛异常。这里探测并替换为内存/空实现，保证初始化不崩溃、界面照常渲染。
+  try{var _t='__ls_probe__';localStorage.setItem(_t,_t);localStorage.removeItem(_t);}
+  catch(e){
+    var _mem={};
+    try{Object.defineProperty(window,'localStorage',{configurable:true,value:{
+      getItem:function(k){return k in _mem?_mem[k]:null;},
+      setItem:function(k,v){_mem[k]=String(v);},
+      removeItem:function(k){delete _mem[k];},
+      clear:function(){_mem={};}
+    }});}catch(e2){}
+    console.warn('[harry] localStorage 不可用，已切换内存模式（数据仅本次会话有效）');
+  }
+  if(typeof indexedDB==='undefined'||!indexedDB){
+    try{Object.defineProperty(window,'indexedDB',{configurable:true,value:{open:function(){var r={onupgradeneeded:null,onsuccess:null,onerror:null};setTimeout(function(){if(r.onerror)r.onerror({error:new Error('idb disabled')});},0);return r;}}});}catch(e){}
+  }
+})();
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.5.3";
+  const APP_VERSION="1.5.6";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -1026,16 +1085,18 @@
   }
 
 
-  function goalOptions(sel){
-    if(state.goals.length===0)return '<option value="">（请先建月目标）</option>';
+  function goalOptions(sel, emptyHint){
+    if(state.goals.length===0)return '<option value="">'+(emptyHint||'（请先建月目标）')+'</option>';
     // 已完成月目标仍要出现在下一级选单中：排到末尾并标注，避免被误以为缺失
     const ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
-    return ordered.map(g=>`<option value="${g.id}" ${sel===g.id?'selected':''}>${esc(g.title)}${g.status==='done'?'（已完成）':''}</option>`).join('');
+    const head=emptyHint?`<option value="">${emptyHint}</option>`:'';
+    return head+ordered.map(g=>`<option value="${g.id}" ${sel===g.id?'selected':''}>${esc(g.title)}${g.status==='done'?'（已完成）':''}</option>`).join('');
   }
-  function weekOptions(sel){
-    if(state.weeks.length===0)return '<option value="">（请先建周任务）</option>';
+  function weekOptions(sel, emptyHint){
+    if(state.weeks.length===0)return '<option value="">'+(emptyHint||'（请先建周任务）')+'</option>';
     const ordered=state.weeks.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
-    return ordered.map(w=>`<option value="${w.id}" ${sel===w.id?'selected':''}>${esc(w.title)}${w.status==='done'?'（已完成）':''}</option>`).join('');
+    const head=emptyHint?`<option value="">${emptyHint}</option>`:'';
+    return head+ordered.map(w=>`<option value="${w.id}" ${sel===w.id?'selected':''}>${esc(w.title)}${w.status==='done'?'（已完成）':''}</option>`).join('');
   }
   function annualOptions(sel){
     if(state.annual.length===0)return '<option value="">（请先建年度目标）</option>';
@@ -1099,7 +1160,8 @@
   function todoForm(t){
     const e=t||{};
     openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>${t?'编辑待办':'新建待办'}</h3>
-      <div class="field"><label>所属周任务</label><select id="f_week">${weekOptions(e.weekId)}</select></div>
+      <div class="field"><label>所属周任务（可选）</label><select id="f_week">${weekOptions(e.weekId,'（不指定 / 留空自动生成）')}</select></div>
+      <div class="field"><label>所属月目标（可选）</label><select id="f_goal">${goalOptions(e.goalId,'（不指定 / 留空自动生成）')}</select></div>
       <div class="field"><label>待办内容</label><input id="f_title" placeholder="如：跑通推理脚本并出第一版结果" value="${esc(e.title||'')}"></div>
       <div class="row2">
         <div class="field"><label>日期</label><input id="f_date" type="date" value="${esc(e.date||todayStr)}"></div>
@@ -1132,11 +1194,30 @@
   };
   window.saveTodo=function(id){
     const weekId=document.getElementById('f_week').value;
+    const goalId=document.getElementById('f_goal').value;
     const title=document.getElementById('f_title').value.trim();
-    if(!weekId){toast('请先选择所属周任务');return;}
     if(!title){toast('请填写待办内容');return;}
-    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=weekId;t.title=title;t.date=document.getElementById('f_date').value;t.priority=document.getElementById('f_pri').value;if(t.date>=todayStr)t.carriedOver=false;}
-    else state.todos.push({id:uid(),weekId,title,date:document.getElementById('f_date').value,priority:document.getElementById('f_pri').value,status:'todo',carriedOver:false,createdAt:Date.now()});
+    const pri=document.getElementById('f_pri').value;
+    const date=document.getElementById('f_date').value;
+    let wid=weekId, gid=goalId;
+    const curMonth=todayStr.slice(0,7);
+    // 新建时：周任务与月目标可都不选，自动生成同名的周任务 + 月目标
+    if(!id){
+      if(!wid && !gid){
+        gid=uid();
+        state.goals.push({id:gid,title,month:curMonth,desc:'',annualId:undefined,status:'todo',createdAt:Date.now()});
+        wid=uid();
+        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,priority:pri,status:'todo',createdAt:Date.now()});
+        toast('已自动创建同名月目标与周任务');
+      } else if(!wid && gid){
+        // 选了月目标但没选周任务：在该月目标下自动生成同名周任务
+        wid=uid();
+        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,priority:pri,status:'todo',createdAt:Date.now()});
+        toast('已在所选月目标下自动创建同名周任务');
+      }
+    }
+    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=wid;t.title=title;t.date=date;t.priority=pri;if(t.date>=todayStr)t.carriedOver=false;}
+    else state.todos.push({id:uid(),weekId:wid,title,date,priority:pri,status:'todo',carriedOver:false,createdAt:Date.now()});
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveAnnual=function(id){

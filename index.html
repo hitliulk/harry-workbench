@@ -153,6 +153,26 @@
   .pbar{height:7px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-top:11px;}
   .pbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:10px;transition:width .4s;}
   .pcnt{font-size:12px;color:var(--txt2);margin-top:6px;font-weight:600;}
+  .metric-row{display:flex;align-items:baseline;gap:7px;font-size:13px;margin-top:8px;flex-wrap:wrap;}
+  .metric-row .mv{font-size:19px;font-weight:800;color:var(--cyan);}
+  .metric-row .mt{color:var(--txt2);}
+  .metric-row .mu{color:var(--txt3);font-size:12px;}
+  .dual{display:flex;gap:10px;align-items:center;font-size:12px;font-weight:600;margin-top:7px;flex-wrap:wrap;}
+  .dual .dp{color:var(--cyan);}
+  .dual .dt{color:var(--txt2);}
+  .dual .warn{color:#F87171;}
+  .dual-bar{position:relative;height:7px;background:rgba(255,255,255,.07);border-radius:10px;margin-top:6px;overflow:hidden;}
+  .dual-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:10px;transition:width .4s;}
+  .dual-bar > u{position:absolute;top:-2px;width:2px;height:11px;background:#F87171;display:block;}
+  .rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .rev-col{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:14px 15px;}
+  .rev-col h4{font-size:13px;font-weight:700;color:var(--txt);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;}
+  .rev-item{font-size:13px;color:var(--txt2);padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.5;}
+  .rev-item:last-child{border-bottom:none;}
+  .rev-item b{color:var(--txt);font-weight:600;}
+  .rev-sub{font-size:11px;color:var(--txt3);margin-top:2px;}
+  .rev-ok{color:#22C55E;font-size:11px;}
+  .rev-late{color:#F59E0B;font-size:11px;}
 
   /* Dashboard */
   .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
@@ -338,6 +358,7 @@
     <div class="tab" data-tab="weeks" data-page-node-id="x8vxq8gWCFUus0xXK8FXvJ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="I7jmGFvBqq3jTnscrbFCc5"><rect x="3" y="4" width="18" height="18" rx="2" data-page-node-id="DCJGMnzKagMF22nc0FSYRI"/><path d="M8 2v4M16 2v4M3 10h18" data-page-node-id="SVbggtho7tjTTRDd9rjzQo"/></svg>周任务</div>
     <div class="tab" data-tab="todos" data-page-node-id="WXiYKQgGkXwRzs7e3HeeWV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="v2ZOJ8If8foHE2wADzQYq5"><path d="M9 11l3 3L22 4" data-page-node-id="XKkgi45B5laFGkSoZI0nQg"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" data-page-node-id="eZ7oyFried5X1xXHaB4IXS"/></svg>每日待办</div>
     <div class="tab" data-tab="dash" data-page-node-id="CKP1RwMVXDEMiVB2Ld5V7f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="w3g43Lv6otz3fCWXp2Gb96"><circle cx="12" cy="12" r="10" data-page-node-id="A4g5AzIBpHm7ko2yY7oOJt"/><path d="M12 2a10 10 0 0 1 10 10" data-page-node-id="VNPttopPYVhfMbPAHFFqfe"/><path d="M12 12l5-5" data-page-node-id="CXissPeShjU3la82gDNwyx"/></svg>仪表盘</div>
+    <div class="tab" data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>周回顾</div>
   </nav>
 
   <!-- 年度目标 -->
@@ -429,6 +450,23 @@
       </div>
     </div>
   </section>
+
+  <!-- 周回顾 -->
+  <section class="tabpane hidden" id="pane-review">
+    <div class="panel">
+      <div class="panel-head">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>周回顾</h2>
+        <button class="btn btn-primary btn-sm" id="btnExportWeek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>导出周报（Markdown）</button>
+      </div>
+      <div id="reviewRange" style="font-size:13px;color:var(--txt2);margin-bottom:14px;"></div>
+      <div class="dash-grid" id="reviewStats" style="margin-bottom:18px;"></div>
+      <div class="rev-grid" id="reviewCols"></div>
+      <div class="dash-sec" style="margin-top:20px;">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>各月目标：完成进度 vs 时间进度</h3>
+        <div id="reviewGoals"></div>
+      </div>
+    </div>
+  </section>
 </div>
 <footer class="app-footer" data-page-node-id="PxCLr5a6SlIngc8ecyVRKV">Harry的工作台 · <span id="appVer" data-page-node-id="hgc3YVPP3713giAcET8so4">v1.5.0</span></footer>
 
@@ -479,7 +517,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.5.6";
+  const APP_VERSION="1.6.0";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -760,6 +798,7 @@
     let changed=false;
     state.todos.forEach(t=>{
       if(t.status!=='done' && t.date<todayStr){
+        if(!t.origDate)t.origDate=t.date;   // 保留首次计划日：顺延会覆盖 date，若不留存则「按时完成率」失去基准
         t.date=todayStr; t.carriedOver=true; changed=true;
       }
     });
@@ -775,18 +814,84 @@
   }
   function goalWeeks(g){return state.weeks.filter(w=>w.goalId===g.id);}
   function goalProgress(g){
+    const mp=metricProgress(g); if(mp!=null)return mp;   // 数值型目标优先
     const ws=goalWeeks(g); if(ws.length===0)return 0;
     const sum=ws.reduce((a,w)=>a+weekProgress(w),0);
     return Math.round(sum/ws.length);
   }
   function annualGoals(ag){return state.goals.filter(g=>g.annualId===ag.id);}
   function annualProgress(ag){
+    const mp=metricProgress(ag); if(mp!=null)return mp;  // 数值型目标优先
     const gs=annualGoals(ag); if(gs.length===0)return 0;
     return Math.round(gs.reduce((a,g)=>a+goalProgress(g),0)/gs.length);
   }
   function overall(){
     const t=state.todos.length; if(t===0)return 0;
     const d=state.todos.filter(x=>x.status==='done').length; return Math.round(d/t*100);
+  }
+
+  // ---- 按时完成率统计（基于 doneAt 完成时间戳）----
+  // 仅统计「已完成且记录了完成时间」的待办；无计划日(date)的不参与按时判定。
+  function ontimeStats(){
+    const done=state.todos.filter(t=>t.status==='done'&&t.doneAt);
+    const planOf=t=>t.origDate||t.date;             // 原始计划日优先（顺延后 date 已被改写）
+    const withPlan=done.filter(t=>planOf(t));
+    let ontime=0,lagSum=0,lagN=0,handleSum=0,handleN=0;
+    withPlan.forEach(t=>{
+      const dStr=fmt(new Date(t.doneAt));
+      const pd=planOf(t);
+      if(dStr<=pd)ontime++;
+      else{
+        const lag=Math.round((new Date(dStr+'T00:00:00')-new Date(pd+'T00:00:00'))/86400000);
+        if(lag>0){lagSum+=lag;lagN++;}
+      }
+    });
+    done.forEach(t=>{
+      if(t.createdAt){const h=(t.doneAt-t.createdAt)/86400000;if(h>=0){handleSum+=h;handleN++;}}
+    });
+    const n=withPlan.length;
+    return {n,ontime,late:n-ontime,
+      rate:n?Math.round(ontime/n*100):null,
+      avgLag:lagN?+(lagSum/lagN).toFixed(1):0,
+      avgHandle:handleN?+(handleSum/handleN).toFixed(1):null};
+  }
+
+  // ---- 时间进度（用于与完成进度双轨对比）----
+  function monthTimeProgress(month){
+    if(!month||!/^\d{4}-\d{2}$/.test(month))return null;
+    const p=month.split('-').map(Number);const y=p[0],m=p[1];
+    const total=new Date(y,m,0).getDate();
+    const now=new Date();
+    if(y>now.getFullYear()||(y===now.getFullYear()&&m>now.getMonth()+1))return 0;
+    if(y<now.getFullYear()||(y===now.getFullYear()&&m<now.getMonth()+1))return 100;
+    return Math.round(now.getDate()/total*100);
+  }
+  function yearTimeProgress(year){
+    const y=Number(year); if(!y)return null;
+    const now=new Date();
+    if(y>now.getFullYear())return 0;
+    if(y<now.getFullYear())return 100;
+    const s=new Date(y,0,1),e=new Date(y+1,0,1);
+    return Math.round((now-s)/(e-s)*100);
+  }
+  // 数值型目标：有 target 时按 current/target 计算进度，否则回落子任务进度
+  function metricProgress(o){
+    const tg=Number(o&&o.target);
+    if(!(tg>0))return null;
+    const cur=Number(o&&o.current)||0;
+    return Math.max(0,Math.round(cur/tg*100));
+  }
+  function dualBar(donePct,timePct){
+    const w=Math.max(0,Math.min(100,donePct||0));
+    let mark='';
+    if(timePct!=null)mark=`<u style="left:calc(${Math.max(0,Math.min(100,timePct))}% - 1px)"></u>`;
+    return `<div class="dual-bar"><i style="width:${w}%"></i>${mark}</div>`;
+  }
+  function dualText(donePct,timePct){
+    if(timePct==null)return `<div class="dual"><span class="dp">完成 ${donePct||0}%</span></div>`;
+    const gap=(timePct)-(donePct||0);
+    const warn=gap>=10?`<span class="warn">落后 ${gap} 个百分点</span>`:(gap<=-10?'<span class="rev-ok">领先 '+(-gap)+' 个百分点</span>':'<span class="rev-ok">与时间同步</span>');
+    return `<div class="dual"><span class="dp">完成 ${donePct||0}%</span><span class="dt">时间已过 ${timePct}%</span>${warn}</div>`;
   }
 
   // ---- 今天要处理 ----
@@ -834,6 +939,7 @@
       const isDone=g.status==='done';
       const undone=ws.filter(w=>w.status!=='done').length;
       const canDone=ws.length>0 && undone===0;
+      const tp=monthTimeProgress(g.month);
       return `<div class="card" style="${isDone?'opacity:.55;':''}">
         <div class="card-top">
           <div class="card-title" style="${isDone?'text-decoration:line-through;':''}">${esc(g.title)}</div>
@@ -847,9 +953,11 @@
           <span class="chip chip-green">已完成 ${done}</span>
           ${isDone?'<span class="chip chip-green">本月已完成</span>':''}
         </div>
-        <div class="pbar"><i style="width:${p}%"></i></div>
-        <div class="pcnt">完成度 ${p}%</div>
+        ${(g.metric&&g.target>0)?`<div class="metric-row"><span class="mv">${g.current==null?0:g.current}</span><span class="mt">/ ${g.target}</span><span class="mu">${esc(g.unit||'')} · ${esc(g.metric)}</span></div>`:''}
+        ${dualBar(p,tp)}
+        ${dualText(p,tp)}
         <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="updateMetric('${g.id}')">更新数值</button>
           ${isDone?'<button class="btn btn-ghost btn-sm" onclick="reopenGoal(\''+g.id+'\')">取消完成</button>'
             : canDone?'<button class="btn btn-primary btn-sm" onclick="doneGoal(\''+g.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>完成</button>'
             :'<button class="btn btn-ghost btn-sm" disabled title="还有 '+undone+' 个周计划未完成，需全部完成后才能确认本月完成">完成（'+done+'/'+ws.length+'）</button>'}
@@ -867,6 +975,7 @@
     box.innerHTML=state.annual.map(a=>{
       const gs=annualGoals(a);
       const p=annualProgress(a);
+      const tp=yearTimeProgress(a.year);
       const done=gs.filter(g=>goalProgress(g)>=100).length;
       return `<div class="card">
         <div class="card-top">
@@ -878,9 +987,11 @@
           <span class="chip chip-blue">月目标 ${gs.length}</span>
           <span class="chip chip-green">已达成 ${done}</span>
         </div>
-        <div class="pbar"><i style="width:${p}%"></i></div>
-        <div class="pcnt">完成度 ${p}%</div>
+        ${(a.metric&&a.target>0)?`<div class="metric-row"><span class="mv">${a.current==null?0:a.current}</span><span class="mt">/ ${a.target}</span><span class="mu">${esc(a.unit||'')} · ${esc(a.metric)}</span></div>`:''}
+        ${dualBar(p,tp)}
+        ${dualText(p,tp)}
         <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="updateMetric('${a.id}')">更新数值</button>
           <button class="btn btn-ghost btn-sm" onclick="editAnnual('${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>编辑</button>
           <button class="btn btn-ghost btn-sm" onclick="delAnnual('${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>删除</button>
         </div>
@@ -967,9 +1078,10 @@
           <span class="chip chip-cyan">${esc(t.date)}</span>
           <span class="chip ${pr[0]}">${pr[1]}</span>
           <span class="chip chip-gray">${g?esc(g.title):'未关联'} ${w?'› '+esc(w.title):''}</span>
+          ${done&&t.doneAt?`<span class="chip ${(t.origDate||t.date)?(fmt(new Date(t.doneAt))<=(t.origDate||t.date)?'chip-green':'chip-amber'):'chip-gray'}">${fmt(new Date(t.doneAt))} 完成${(t.origDate||t.date)?(fmt(new Date(t.doneAt))<=(t.origDate||t.date)?' · 按时':' · 逾期'):''}</span>`:''}
         </div>
         <div class="card-actions">
-          ${done?'':`<button class="btn btn-primary btn-sm" onclick="doneTodo('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>完成</button>`}
+          ${done?`<button class="btn btn-ghost btn-sm" onclick="reopenTodo('${t.id}')">撤销完成</button>`:`<button class="btn btn-primary btn-sm" onclick="doneTodo('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>完成</button>`}
           <button class="btn btn-ghost btn-sm" onclick="editTodo('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>编辑</button>
           <button class="btn btn-danger btn-sm" onclick="delTodo('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>删除</button>
         </div>
@@ -990,12 +1102,16 @@
   }
   function renderDash(){
     const o=overall();
+    const os=ontimeStats();
     document.getElementById('dashStats').innerHTML=`
       <div class="stat"><div class="num">${state.annual.length}</div><div class="lab">年度目标</div></div>
       <div class="stat"><div class="num">${state.goals.length}</div><div class="lab">月目标</div></div>
       <div class="stat"><div class="num">${state.weeks.length}</div><div class="lab">周任务</div></div>
       <div class="stat"><div class="num">${state.todos.filter(t=>t.status==='done').length}/${state.todos.length}</div><div class="lab">待办完成</div></div>
-      <div class="stat"><div class="num" style="background:linear-gradient(135deg,#22C55E,#14B8A6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">${state.todos.filter(t=>t.carriedOver&&t.status!=='done').length}</div><div class="lab">逾期顺延</div></div>`;
+      <div class="stat"><div class="num" style="background:linear-gradient(135deg,#22C55E,#14B8A6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">${state.todos.filter(t=>t.carriedOver&&t.status!=='done').length}</div><div class="lab">逾期顺延</div></div>
+      <div class="stat"><div class="num" style="background:linear-gradient(135deg,#22C55E,#84CC16);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">${os.rate==null?'—':os.rate+'%'}</div><div class="lab">按时完成率${os.n?'（'+os.n+' 条）':''}</div></div>
+      <div class="stat"><div class="num">${os.avgHandle==null?'—':os.avgHandle}</div><div class="lab">平均处理时长（天）</div></div>
+      <div class="stat"><div class="num">${os.avgLag||0}</div><div class="lab">平均逾期天数</div></div>`;
     document.getElementById('ringWrap').innerHTML=ring(o,o>=80?'#22C55E':o>=50?'#22D3EE':'#F59E0B');
     document.getElementById('ringLegend').innerHTML=`<span><i style="background:#22C55E"></i>已达成</span><span><i style="background:#3B82F6"></i>进行中</span><span><i style="background:rgba(239,68,68,.7)"></i>逾期</span>`;
 
@@ -1052,9 +1168,117 @@
   function emptyState(t){return `<div class="empty-state">${esc(t)}</div>`;}
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
+  // ---- 周回顾 ----
+  function mondayOf(d){const x=new Date(d);const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-wd);x.setHours(0,0,0,0);return x;}
+  function weekBounds(off){
+    const m=mondayOf(new Date()); m.setDate(m.getDate()+(off||0)*7);
+    const s=new Date(m),e=new Date(m); e.setDate(s.getDate()+6);
+    return {s,e,ss:fmt(s),ee:fmt(e)};
+  }
+  function reviewData(){
+    const b=weekBounds(0),nb=weekBounds(1);
+    const inRange=(d,s,e)=>!!d&&d>=s&&d<=e;
+    const doneW=state.todos.filter(t=>t.status==='done'&&t.doneAt&&inRange(fmt(new Date(t.doneAt)),b.ss,b.ee));
+    const planW=state.todos.filter(t=>inRange(t.date,b.ss,b.ee));
+    const openW=planW.filter(t=>t.status!=='done');
+    const carry=state.todos.filter(t=>t.carriedOver&&t.status!=='done');
+    const nextW=state.todos.filter(t=>inRange(t.date,nb.ss,nb.ee)&&t.status!=='done');
+    const ontime=doneW.filter(t=>(t.origDate||t.date)&&fmt(new Date(t.doneAt))<=(t.origDate||t.date)).length;
+    const rate=doneW.length?Math.round(ontime/doneW.length*100):null;
+    return {b,nb,doneW,planW,openW,carry,nextW,ontime,rate};
+  }
+  function todoLine(t,withTime){
+    const w=state.weeks.find(x=>x.id===t.weekId);
+    const g=w?state.goals.find(x=>x.id===w.goalId):null;
+    let extra='';
+    const plan=t.origDate||t.date;
+    if(withTime&&t.doneAt&&plan){
+      const ok=fmt(new Date(t.doneAt))<=plan;
+      extra=`<div class="rev-sub ${ok?'rev-ok':'rev-late'}">${ok?'按时':'逾期'}完成 · ${fmt(new Date(t.doneAt))}${g?' · '+esc(g.title):''}</div>`;
+    }else{
+      extra=`<div class="rev-sub">${t.carriedOver&&t.origDate?'原计划 '+esc(t.origDate)+' · 已顺延':'计划 '+esc(t.date||'未设日期')}${g?' · '+esc(g.title):''}</div>`;
+    }
+    return `<div class="rev-item"><b>${esc(t.title)}</b>${extra}</div>`;
+  }
+  function renderReview(){
+    const d=reviewData();
+    const wd=['一','二','三','四','五','六','日'];
+    const dayIdx=(new Date().getDay()+6)%7;
+    document.getElementById('reviewRange').textContent=`本周区间：${d.b.ss}（周一）～ ${d.b.ee}（周日） · 今天是本周第 ${dayIdx+1} 天（周${wd[dayIdx]}）`;
+    document.getElementById('reviewStats').innerHTML=`
+      <div class="stat"><div class="num">${d.doneW.length}</div><div class="lab">本周已完成</div></div>
+      <div class="stat"><div class="num">${d.rate==null?'—':d.rate+'%'}</div><div class="lab">本周按时完成率</div></div>
+      <div class="stat"><div class="num">${d.planW.length}</div><div class="lab">本周计划项</div></div>
+      <div class="stat"><div class="num" style="background:linear-gradient(135deg,#F59E0B,#EF4444);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">${d.carry.length}</div><div class="lab">逾期顺延中</div></div>`;
+    const col=(title,arr,withTime,empty)=>`<div class="rev-col"><h4>${title}<span style="color:var(--txt3);font-weight:400;">${arr.length} 项</span></h4>${arr.length?arr.map(t=>todoLine(t,withTime)).join(''):`<div class="rev-sub">${empty}</div>`}</div>`;
+    document.getElementById('reviewCols').innerHTML=
+      col('本周完成',d.doneW,true,'本周还没有完成记录')+
+      col('本周待办（未完成）',d.openW,false,'本周计划已全部完成')+
+      col('逾期顺延中',d.carry,false,'没有逾期顺延的任务')+
+      col('下周重点',d.nextW,false,'下周还没有安排');
+    const gs=state.goals.filter(g=>g.status!=='done');
+    document.getElementById('reviewGoals').innerHTML=gs.length?gs.map(g=>{
+      const p=goalProgress(g),tp=monthTimeProgress(g.month);
+      return `<div style="margin-bottom:13px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;">
+          <span style="color:var(--txt2);">${esc(g.title)}</span>
+          <span style="color:var(--txt);font-weight:700;">${p}%</span>
+        </div>
+        ${dualBar(p,tp)}${dualText(p,tp)}
+      </div>`;
+    }).join(''):emptyState('暂无进行中的月目标');
+  }
+  function buildWeeklyReport(){
+    const d=reviewData(),st=ontimeStats(),L=[];
+    L.push(`# 周报 ${d.b.ss} ～ ${d.b.ee}`);
+    L.push('');
+    L.push(`> 生成时间：${new Date().toLocaleString('zh-CN')}`);
+    L.push('');
+    L.push('## 一、本周概览');
+    L.push('');
+    L.push(`- 本周完成：**${d.doneW.length}** 项`);
+    L.push(`- 按时完成率：**${d.rate==null?'—（本周无完成记录）':d.rate+'%'}**（${d.ontime}/${d.doneW.length}）`);
+    L.push(`- 本周计划：${d.planW.length} 项，未完成 ${d.openW.length} 项`);
+    L.push(`- 逾期顺延中：${d.carry.length} 项`);
+    L.push(`- 历史累计按时完成率：${st.rate==null?'—':st.rate+'%'}（基于 ${st.n} 条已记录完成数据）${st.avgHandle!=null?'，平均处理时长 '+st.avgHandle+' 天':''}`);
+    L.push('');
+    L.push('## 二、本周完成清单');
+    L.push('');
+    if(d.doneW.length===0)L.push('_本周暂无完成记录_');
+    else d.doneW.forEach(t=>{
+      const pd=t.origDate||t.date;
+      const ok=pd?fmt(new Date(t.doneAt))<=pd:null;
+      L.push(`- [x] ${t.title}${ok==null?'':(ok?'（按时）':'（逾期）')}${t.doneAt?'　完成于 '+fmt(new Date(t.doneAt)):''}`);
+    });
+    L.push('');
+    L.push('## 三、未完成与顺延');
+    L.push('');
+    if(d.openW.length===0&&d.carry.length===0)L.push('_无_');
+    else{
+      d.openW.forEach(t=>L.push(`- [ ] ${t.title}　计划 ${t.date||'未设日期'}`));
+      d.carry.forEach(t=>L.push(`- [ ] ${t.title}　**逾期顺延**　原计划 ${t.origDate||t.date||'—'}`));
+    }
+    L.push('');
+    L.push('## 四、下周重点');
+    L.push('');
+    if(d.nextW.length===0)L.push('_下周暂无安排_');
+    else d.nextW.forEach(t=>L.push(`- [ ] ${t.title}　${t.date}　${t.priority||''}`));
+    L.push('');
+    L.push('## 五、目标进度（完成 vs 时间）');
+    L.push('');
+    if(state.goals.length===0)L.push('_暂无月目标_');
+    else state.goals.forEach(g=>{
+      const p=goalProgress(g),tp=monthTimeProgress(g.month);
+      const flag=(tp!=null&&tp-p>=10)?' ⚠ 落后':'';
+      L.push(`- ${g.title}（${g.month||'未设月份'}）：完成 ${p}%${tp!=null?' / 时间已过 '+tp+'%':''}${flag}${g.metric&&g.target>0?`（${g.metric} ${g.current==null?0:g.current}/${g.target}${g.unit||''}）`:''}`);
+    });
+    L.push('');
+    return L.join('\n');
+  }
+
   // ---- 全部渲染 ----
   function renderAll(){
-    renderToday();renderAnnual();renderGoals();renderWeeks();renderTodos();renderDash();updateBackupHint();renderDateBar();
+    renderToday();renderAnnual();renderGoals();renderWeeks();renderTodos();renderDash();renderReview();updateBackupHint();renderDateBar();
   }
 
   // ---- Modal 系统 ----
@@ -1122,6 +1346,12 @@
       <div class="field"><label>目标名称</label><input id="f_title" placeholder="如：8月完成 SAR 成像算法验证" value="${esc(e.title||'')}"></div>
       <div class="field"><label>归属月份</label><select id="f_month">${monthOptions(e.month)}</select></div>
       <div class="field"><label>目标说明</label><textarea id="f_desc" placeholder="关键结果 / 验收标准">${esc(e.desc||'')}</textarea></div>
+      <div class="field"><label>量化指标（可选）</label><input id="f_metric" placeholder="如：新签客户数 / 在手订单额（留空则按子任务进度计算）" value="${esc(e.metric||'')}"></div>
+      <div class="row2">
+        <div class="field"><label>当前值</label><input id="f_cur" type="number" step="any" value="${e.current==null?'':e.current}"></div>
+        <div class="field"><label>目标值</label><input id="f_tg" type="number" step="any" value="${e.target==null?'':e.target}"></div>
+      </div>
+      <div class="field"><label>单位</label><input id="f_unit" placeholder="如：家 / 万元 / 次" value="${esc(e.unit||'')}"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveGoal('${e.id||''}')">保存</button>
@@ -1134,6 +1364,12 @@
       <div class="field"><label>年度目标名称</label><input id="f_title" placeholder="如：2026 商业航天产品化突破" value="${esc(e.title||'')}"></div>
       <div class="field"><label>归属年份</label><input id="f_year" placeholder="如 2026" value="${esc(e.year||'')}"></div>
       <div class="field"><label>目标说明 / 战略主题</label><textarea id="f_desc" placeholder="年度三大战役 / 关键结果">${esc(e.desc||'')}</textarea></div>
+      <div class="field"><label>量化指标（可选）</label><input id="f_metric" placeholder="如：年度营收 / 新签客户数（留空则按月目标平均进度计算）" value="${esc(e.metric||'')}"></div>
+      <div class="row2">
+        <div class="field"><label>当前值</label><input id="f_cur" type="number" step="any" value="${e.current==null?'':e.current}"></div>
+        <div class="field"><label>目标值</label><input id="f_tg" type="number" step="any" value="${e.target==null?'':e.target}"></div>
+      </div>
+      <div class="field"><label>单位</label><input id="f_unit" placeholder="如：万元 / 家 / 次" value="${esc(e.unit||'')}"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveAnnual('${e.id||''}')">保存</button>
@@ -1175,12 +1411,21 @@
   }
 
   // ---- 保存 ----
+  function readMetricFields(){
+    const c=document.getElementById('f_cur').value.trim();
+    const tg=document.getElementById('f_tg').value.trim();
+    return {metric:document.getElementById('f_metric').value.trim(),
+      current:c===''?null:Number(c),
+      target:tg===''?null:Number(tg),
+      unit:document.getElementById('f_unit').value.trim()};
+  }
   window.saveGoal=function(id){
     const title=document.getElementById('f_title').value.trim();
     if(!title){toast('请填写目标名称');return;}
     const annualId=document.getElementById('f_annual').value;
-    if(id){const g=state.goals.find(x=>x.id===id);g.title=title;g.month=document.getElementById('f_month').value.trim();g.desc=document.getElementById('f_desc').value.trim();g.annualId=annualId||undefined;}
-    else state.goals.push({id:uid(),title,month:document.getElementById('f_month').value.trim(),desc:document.getElementById('f_desc').value.trim(),annualId:annualId||undefined,createdAt:Date.now()});
+    const mf=readMetricFields();
+    if(id){const g=state.goals.find(x=>x.id===id);g.title=title;g.month=document.getElementById('f_month').value.trim();g.desc=document.getElementById('f_desc').value.trim();g.annualId=annualId||undefined;Object.assign(g,mf);}
+    else state.goals.push(Object.assign({id:uid(),title,month:document.getElementById('f_month').value.trim(),desc:document.getElementById('f_desc').value.trim(),annualId:annualId||undefined,createdAt:Date.now()},mf));
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveWeek=function(id){
@@ -1223,13 +1468,47 @@
   window.saveAnnual=function(id){
     const title=document.getElementById('f_title').value.trim();
     if(!title){toast('请填写年度目标名称');return;}
-    if(id){const a=state.annual.find(x=>x.id===id);a.title=title;a.year=document.getElementById('f_year').value.trim();a.desc=document.getElementById('f_desc').value.trim();}
-    else state.annual.push({id:uid(),title,year:document.getElementById('f_year').value.trim(),desc:document.getElementById('f_desc').value.trim(),createdAt:Date.now()});
+    const mf=readMetricFields();
+    if(id){const a=state.annual.find(x=>x.id===id);a.title=title;a.year=document.getElementById('f_year').value.trim();a.desc=document.getElementById('f_desc').value.trim();Object.assign(a,mf);}
+    else state.annual.push(Object.assign({id:uid(),title,year:document.getElementById('f_year').value.trim(),desc:document.getElementById('f_desc').value.trim(),createdAt:Date.now()},mf));
     save();closeModal();renderAll();toast('已保存');
   };
 
   // ---- 操作 ----
-  window.doneTodo=function(id){const t=state.todos.find(x=>x.id===id);if(t){t.status='done';save();renderAll();toast('已完成 ✓');}};
+  window.doneTodo=function(id){const t=state.todos.find(x=>x.id===id);if(t){t.status='done';t.doneAt=Date.now();save();renderAll();toast('已完成 ✓');}};
+  window.reopenTodo=function(id){const t=state.todos.find(x=>x.id===id);if(t){t.status='todo';t.doneAt=null;save();renderAll();toast('已撤销完成');}};
+  // 数值型目标：快速更新「当前值」
+  window.updateMetric=function(id){
+    const g=state.goals.find(x=>x.id===id)||state.annual.find(x=>x.id===id);
+    if(!g)return;
+    const isAnnual=!!state.annual.find(x=>x.id===id);
+    openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-3 3"/></svg>更新进度数值</h3>
+      <div class="field"><label>${esc(g.title)}</label></div>
+      <div class="field"><label>指标名称</label><input id="m_name" value="${esc(g.metric||'')}" placeholder="如：新签客户数"></div>
+      <div class="row2">
+        <div class="field"><label>当前值</label><input id="m_cur" type="number" step="any" value="${g.current==null?'':g.current}"></div>
+        <div class="field"><label>目标值</label><input id="m_tg" type="number" step="any" value="${g.target==null?'':g.target}"></div>
+      </div>
+      <div class="field"><label>单位</label><input id="m_unit" value="${esc(g.unit||'')}" placeholder="如：家 / 万元 / 次"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveMetric('${id}',${isAnnual})">保存</button>
+      </div>`);
+    setTimeout(()=>document.getElementById('m_cur').focus(),60);
+  };
+  window.saveMetric=function(id,isAnnual){
+    const arr=isAnnual?state.annual:state.goals;
+    const o=arr.find(x=>x.id===id); if(!o)return;
+    o.metric=document.getElementById('m_name').value.trim();
+    const c=document.getElementById('m_cur').value.trim(), tg=document.getElementById('m_tg').value.trim();
+    o.current=c===''?null:Number(c);
+    o.target=tg===''?null:Number(tg);
+    o.unit=document.getElementById('m_unit').value.trim();
+    if(o.target>0&&o.current!=null&&o.current>=o.target&&o.status!=='done'&&!isAnnual){
+      o.status='done';toast('已达成目标值，月目标自动标记完成');
+    }
+    save();closeModal();renderAll();toast('进度已更新');
+  };
   window.cycleWeek=function(id){const w=state.weeks.find(x=>x.id===id);if(w){const seq=['todo','doing','done'];w.status=seq[(seq.indexOf(w.status)+1)%3];save();renderAll();toast('状态：'+['待办','进行中','已完成'][seq.indexOf(w.status)]);}};
   window.doneWeek=function(id){const w=state.weeks.find(x=>x.id===id);if(w){w.status='done';save();renderAll();toast('本周任务已完成 ✓');}};
   // 月计划「完成」：前提是该月下所有周计划均已「已完成」（且至少有一个周计划）
@@ -1332,6 +1611,16 @@
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();
     URL.revokeObjectURL(a.href);toast('已导出 JSON 备份（浏览器默认下载目录）');
   }
+  function downloadText(text,fname,mime){
+    const blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  document.getElementById('btnExportWeek').onclick=function(){
+    const b=weekBounds(0);
+    downloadText(buildWeeklyReport(),`周报_${b.ss}_${b.ee}.md`,'text/markdown;charset=utf-8');
+    toast(`周报已导出：周报_${b.ss}_${b.ee}.md`);
+  };
   document.getElementById('btnImport').onclick=function(){document.getElementById('fileImport').click();};
   document.getElementById('fileImport').onchange=function(e){
     const f=e.target.files[0];if(!f)return;const rd=new FileReader();

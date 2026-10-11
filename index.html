@@ -114,6 +114,47 @@
   .ttext .tm{font-size:11px;color:var(--txt3);margin-top:1px;}
   .ttext .tag-over{color:var(--red);font-weight:700;}
   .ttext .tag-due{color:var(--amber);font-weight:700;}
+  /* ---- 24 小时单日时间轴日历 ---- */
+  .tlcal{position:relative;user-select:none;}
+  .tlgrid{display:grid;grid-template-columns:52px 1fr;position:relative;}
+  .tlhours{border-right:1px solid var(--line);}
+  .tlhour{height:56px;font-size:11px;color:var(--txt3);text-align:right;padding-right:7px;transform:translateY(-6px);}
+  .tlbody{position:relative;}
+  .tlslot{height:56px;border-bottom:1px dashed rgba(255,255,255,.07);}
+  .tlslot:hover{background:rgba(34,211,238,.06);}
+  .tlslot.dragover{background:rgba(34,211,238,.14);box-shadow:inset 0 0 0 1px rgba(34,211,238,.4);}
+  .tlnow{position:absolute;left:0;right:0;height:2px;background:var(--red);z-index:6;pointer-events:none;}
+  .tlnow::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--red);}
+  .tlcard{
+    position:absolute;left:4px;right:6px;z-index:5;border-radius:9px;padding:5px 8px;
+    background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--cyan);
+    cursor:grab;overflow:hidden;
+  }
+  .tlcard.dragging{opacity:.55;cursor:grabbing;z-index:20;}
+  .tlcard.overdue{border-left-color:var(--red);}
+  .tlcard.high{border-left-color:var(--red);background:rgba(239,68,68,.14);}
+  .tlcard.mid{border-left-color:var(--amber);background:rgba(245,158,11,.12);}
+  .tlcard.low{border-left-color:var(--blue);background:rgba(59,130,246,.10);}
+  .tlcard.done{opacity:.5;}
+  .tlcard .tlc-title{font-size:12px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tlcard .tlc-meta{font-size:10px;color:var(--txt3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tlcard .tlc-time{font-size:10px;color:var(--cyan);font-weight:700;}
+  .tlcard .tlc-ops{display:flex;gap:4px;margin-top:2px;}
+  .tlcard .tlc-ops button{font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--txt2);cursor:pointer;}
+  .tlcard .tlc-ops button:hover{border-color:var(--cyan);color:var(--cyan);}
+  /* 未排期（无具体时间）区块 */
+  .tlunsched{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:11px;background:var(--panel2);}
+  .tlunsched h4{font-size:12px;color:var(--txt2);margin:0 0 8px;font-weight:700;}
+  .tlunsched-list{display:flex;flex-wrap:wrap;gap:7px;}
+  .tluchip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 9px;border-radius:8px;
+    background:var(--panel);border:1px solid var(--line);cursor:grab;max-width:260px;}
+  .tluchip .tlu-t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tluchip.high{border-color:rgba(239,68,68,.5);}
+  .tluchip.mid{border-color:rgba(245,158,11,.45);}
+  .tlhint{font-size:11px;color:var(--txt3);margin-top:8px;text-align:center;}
+  .tl-edit-row{display:flex;gap:8px;align-items:center;}
+  .tl-edit-row input[type=time]{flex:1;}
+
   .today-empty{color:var(--txt3);font-size:13px;padding:6px 2px;text-align:center;}
 
   /* Tabs */
@@ -519,7 +560,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.7.0";
+  const APP_VERSION="1.8.0";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -896,35 +937,159 @@
     return `<div class="dual"><span class="dp">完成 ${donePct||0}%</span><span class="dt">时间已过 ${timePct}%</span>${warn}</div>`;
   }
 
-  // ---- 今天要处理 ----
+  // ---- 今天要处理：24 小时单日时间轴日历 ----
+  // 每个待办可选填 start（'HH:MM'）；填了则落在时间轴对应整点槽，未填的进「未排期」区。
+  // 拖动卡片到某小时槽即改时间；点标题可打开编辑弹窗改时间；「清除」回到未排期。
+  function slotOf(t){
+    if(!t.start||!/^\d{1,2}:\d{2}$/.test(t.start))return null;
+    const h=parseInt(t.start.split(':')[0],10);
+    if(isNaN(h)||h<0||h>23)return null;
+    return h;
+  }
+  function hhmmToMin(s){if(!s||!/^\d{1,2}:\d{2}$/.test(s))return null;const p=s.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);}
+  function minToHHMM(m){m=Math.max(0,Math.min(23*60+55,m));return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+  function fmtRange(t){
+    const a=hhmmToMin(t.start); if(a==null)return '';
+    const b=hhmmToMin(t.end);
+    return b!=null&&b>a? `${t.start}–${t.end}` : t.start;
+  }
   function renderToday(){
-    const list=document.getElementById('todayList');
+    const box=document.getElementById('todayList');
     const items=state.todos.filter(t=>t.date===todayStr && t.status!=='done');
-    // 排序：逾期 > 到期 > 普通，再按优先级
-    const pri={P0:0,P1:1,P2:2};
     items.sort((a,b)=>{
       if(a.carriedOver!==b.carriedOver)return a.carriedOver?-1:1;
-      return taskScore(b)-taskScore(a);   // 分值高者靠上
+      const sa=slotOf(a),sb=slotOf(b);
+      if(sa!=null&&sb!=null&&sa!==sb)return sa-sb;          // 都有时间 → 早的靠上
+      if(sa!=null)return -1; if(sb!=null)return 1;           // 有时间的排前面
+      return taskScore(b)-taskScore(a);
     });
-    document.getElementById('todayCount').textContent=items.length+' 项';
-    if(items.length===0){list.innerHTML='<div class="today-empty">今天没有待处理事项，去目标里添加任务吧</div>';return;}
-    list.innerHTML=items.map(t=>{
+    const scheduled=items.filter(t=>slotOf(t)!=null);
+    const unscheduled=items.filter(t=>slotOf(t)==null);
+    document.getElementById('todayCount').textContent=`${items.length} 项 · 已排期 ${scheduled.length}`;
+    if(items.length===0){box.innerHTML='<div class="today-empty">今天没有待处理事项，去目标里添加任务吧</div>';return;}
+
+    const HOUR_H=56;
+    let hours='';
+    for(let h=0;h<24;h++)hours+=`<div class="tlhour">${String(h).padStart(2,'0')}:00</div>`;
+    let slots='';
+    for(let h=0;h<24;h++)slots+=`<div class="tlslot" data-hour="${h}"></div>`;
+    // 当前时刻红线
+    const now=new Date();
+    const nowM=now.getHours()*60+now.getMinutes();
+    const nowY=(nowM/60)*HOUR_H;
+    const nowLine=`<div class="tlnow" style="top:${nowY}px"></div>`;
+
+    const cards=scheduled.map(t=>{
+      const h=slotOf(t);
       const w=state.weeks.find(x=>x.id===t.weekId);
       const g=w?state.goals.find(x=>x.id===w.goalId):null;
-      const cls=t.carriedOver?'overdue':'';
-      const dot=t.carriedOver?'overdue':(taskScore(t)>=6?'due':'norm');
-      const tag=t.carriedOver?'<span class="tag-over">逾期顺延</span>':(taskScore(t)>=6?`<span class="tag-due">${taskScore(t)}分</span>`:'');
-      const metaTxt=[g?g.title:'未关联',w?w.title:'',].filter(Boolean).join(' › ');
-      return `<div class="titem ${cls}">
-        <span class="tdot ${dot}"></span>
-        <div class="ttext">
-          <div class="tt">${esc(t.title)}</div>
-          <div class="tm">${metaTxt} ${tag}</div>
+      const tier=taskScore(t)>=6?'high':(taskScore(t)>=4.5?'mid':'low');
+      const meta=[g?g.title:'未关联',w?w.title:''].filter(Boolean).join(' › ');
+      const dur=Math.max(0.5,(hhmmToMin(t.end)-hhmmToMin(t.start))/60||1);
+      const hh=Math.max(0.5,dur)*HOUR_H;
+      return `<div class="tlcard ${t.carriedOver?'overdue ':''}${tier}" draggable="true" data-id="${t.id}"
+        style="top:${h*HOUR_H+2}px;height:${hh-4}px" data-tid="${t.id}">
+        <div class="tlc-title" onclick="openTodoTime('${t.id}')" title="点击修改时间">${esc(t.title)}</div>
+        <div class="tlc-meta">${esc(fmtRange(t))} · ${taskScore(t)}分${t.carriedOver?' · 逾期顺延':''}</div>
+        <div class="tlc-meta">${esc(meta)}</div>
+        <div class="tlc-ops">
+          <button onclick="event.stopPropagation();doneTodo('${t.id}')">完成</button>
+          <button onclick="event.stopPropagation();openTodoTime('${t.id}')">改时间</button>
+          <button onclick="event.stopPropagation();clearTodoTime('${t.id}')">清除</button>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="doneTodo('${t.id}')">完成</button>
       </div>`;
     }).join('');
+
+    const unsched=unscheduled.map(t=>{
+      const tier=taskScore(t)>=6?'high':(taskScore(t)>=4.5?'mid':'low');
+      const w=state.weeks.find(x=>x.id===t.weekId);
+      const g=w?state.goals.find(x=>x.id===w.goalId):null;
+      return `<div class="tluchip ${tier}" draggable="true" data-id="${t.id}">
+        <span class="tlu-t" title="${esc(g?g.title:'未关联')}">${esc(t.title)}</span>
+        <span style="color:var(--txt3);font-size:10px;">${taskScore(t)}分</span>
+        <button onclick="event.stopPropagation();doneTodo('${t.id}')" style="border:none;background:none;color:var(--cyan);cursor:pointer;">完成</button>
+      </div>`;
+    }).join('');
+
+    box.innerHTML=`
+      <div class="tlcal">
+        <div class="tlgrid">
+          <div class="tlhours">${hours}</div>
+          <div class="tlbody" id="tlBody">${slots}${cards}${nowLine}</div>
+        </div>
+      </div>
+      <div class="tlunsched">
+        <h4>未排期（拖到左侧时间轴可安排具体时间，或点「改时间」） · ${unscheduled.length} 项</h4>
+        <div class="tlunsched-list" id="tlUnsched">${unsched||'<span style="font-size:12px;color:var(--txt3);">全部已排期 🎉</span>'}</div>
+      </div>
+      <div class="tlhint">提示：拖动卡片或未排期标签到左侧任意整点槽即可改时间；点击标题可在弹窗中精确到分钟设置起止时间。</div>`;
+    bindTimelineDnD();
   }
+
+  // ---- 时间轴拖放 ----
+  function bindTimelineDnD(){
+    const body=document.getElementById('tlBody');
+    if(!body)return;
+    let dragId=null;
+    document.querySelectorAll('#tlBody .tlcard, #tlUnsched .tluchip').forEach(el=>{
+      el.addEventListener('dragstart',e=>{dragId=el.getAttribute('data-id');el.classList.add('dragging');
+        try{e.dataTransfer.setData('text/plain',dragId);e.dataTransfer.effectAllowed='move';}catch(err){}
+      });
+      el.addEventListener('dragend',()=>{el.classList.remove('dragging');
+        document.querySelectorAll('.tlslot.dragover').forEach(s=>s.classList.remove('dragover'));});
+    });
+    document.querySelectorAll('.tlslot').forEach(slot=>{
+      slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('dragover');
+        try{e.dataTransfer.dropEffect='move';}catch(err){}});
+      slot.addEventListener('dragleave',()=>slot.classList.remove('dragover'));
+      slot.addEventListener('drop',e=>{
+        e.preventDefault();slot.classList.remove('dragover');
+        const id=(e.dataTransfer&&e.dataTransfer.getData('text/plain'))||dragId;
+        if(!id)return;
+        const h=slot.getAttribute('data-hour');
+        const t=state.todos.find(x=>x.id===id);
+        if(!t)return;
+        const oldM=hhmmToMin(t.start);
+        const baseM=oldM!=null?oldM:(parseInt(h,10)*60);
+        // 保持原有分钟数，只改小时；无时间则按整点
+        t.start=minToHHMM(Math.round((parseInt(h,10)*60)+(oldM!=null?(oldM%60):0)));
+        if(t.end!=null&&hhmmToMin(t.end)<=hhmmToMin(t.start))t.end=minToHHMM(hhmmToMin(t.start)+30);
+        t.date=todayStr; // 拖到时间轴即视为安排在今天
+        save();renderAll();toast(`已安排到 ${String(h).padStart(2,'0')}:${String(baseM%60).padStart(2,'0')}`);
+      });
+    });
+  }
+  // 点击标题 → 弹窗精确设置起止时间
+  window.openTodoTime=function(id){
+    const t=state.todos.find(x=>x.id===id);if(!t)return;
+    openModal(`<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>安排时间</h3>
+      <div class="field"><label>任务</label><input value="${esc(t.title)}" disabled></div>
+      <div class="tl-edit-row">
+        <div class="field"><label>开始</label><input id="f_start" type="time" value="${esc(t.start||'')}"></div>
+        <div class="field"><label>结束（可空）</label><input id="f_end" type="time" value="${esc(t.end||'')}"></div>
+      </div>
+      <div class="field"><label>日期</label><input id="f_date" type="date" value="${esc(t.date||todayStr)}"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn btn-ghost" onclick="clearTodoTime('${t.id}')">清除时间</button>
+        <button class="btn btn-primary" onclick="saveTodoTime('${t.id}')">保存</button>
+      </div>`);
+  };
+  window.saveTodoTime=function(id){
+    const t=state.todos.find(x=>x.id===id);if(!t)return;
+    const s=document.getElementById('f_start').value;
+    const e=document.getElementById('f_end').value;
+    t.start=s||null;
+    t.end=(s&&e&&hhmmToMin(e)>hhmmToMin(s))?e:null;
+    const d=document.getElementById('f_date').value;
+    if(d)t.date=d;
+    save();closeModal();renderAll();toast(t.start?`已安排到 ${t.start}`:'已移回未排期');
+  };
+  window.clearTodoTime=function(id){
+    const t=state.todos.find(x=>x.id===id);if(!t)return;
+    t.start=null;t.end=null;
+    save();closeModal();renderAll();toast('已移回未排期');
+  };
 
   // ---- 渲染 月目标 ----
   function renderGoals(){
@@ -1467,6 +1632,10 @@
         <div class="field"><label>紧急度</label><select id="f_urg">${urgOptions(e.urg)}</select></div>
       </div>
       <div class="field"><label>日期</label><input id="f_date" type="date" value="${esc(e.date||todayStr)}"></div>
+      <div class="tl-edit-row">
+        <div class="field"><label>开始时间（可选）</label><input id="f_start" type="time" value="${esc(e.start||'')}"></div>
+        <div class="field"><label>结束时间（可选）</label><input id="f_end" type="time" value="${esc(e.end||'')}"></div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveTodo('${e.id||''}')">保存</button>
@@ -1510,7 +1679,14 @@
     if(!title){toast('请填写待办内容');return;}
     const imp=Number(document.getElementById('f_imp').value)||2;
     const urg=Number(document.getElementById('f_urg').value)||2;
-    const date=document.getElementById('f_date').value;
+    const date=document.getElementById('f_date').value||todayStr;
+    // 时间轴：开始/结束时间（可选，精确到分钟）
+    let sEl=document.getElementById('f_start'), eEl=document.getElementById('f_end');
+    let start=sEl?(sEl.value||'').trim():'';
+    let end=eEl?(eEl.value||'').trim():'';
+    if(start&&hhmmToMin(start)===null)start='';
+    if(end&&hhmmToMin(end)===null)end='';
+    if(start&&end&&hhmmToMin(end)<=hhmmToMin(start)){toast('结束时间需晚于开始时间');return;}
     let wid=weekId, gid=goalId;
     const curMonth=todayStr.slice(0,7);
     // 新建时：周任务与月目标可都不选，自动生成同名的周任务 + 月目标
@@ -1528,8 +1704,8 @@
         toast('已在所选月目标下自动创建同名周任务');
       }
     }
-    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=wid;t.title=title;t.date=date;t.imp=imp;t.urg=urg;if(t.date>=todayStr)t.carriedOver=false;}
-    else state.todos.push({id:uid(),weekId:wid,title,date,imp,urg,status:'todo',carriedOver:false,createdAt:Date.now()});
+    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=wid;t.title=title;t.date=date;t.imp=imp;t.urg=urg;t.start=start||null;t.end=end||null;if(t.date>=todayStr)t.carriedOver=false;}
+    else state.todos.push({id:uid(),weekId:wid,title,date,imp,urg,status:'todo',carriedOver:false,start:start||null,end:end||null,createdAt:Date.now()});
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveAnnual=function(id){

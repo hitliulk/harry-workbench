@@ -170,6 +170,7 @@
   .rev-item{font-size:13px;color:var(--txt2);padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.5;}
   .rev-item:last-child{border-bottom:none;}
   .rev-item b{color:var(--txt);font-weight:600;}
+  .rev-score{float:right;font-size:11px;font-weight:700;color:var(--cyan);background:rgba(34,211,238,.12);border-radius:6px;padding:1px 6px;}
   .rev-sub{font-size:11px;color:var(--txt3);margin-top:2px;}
   .rev-ok{color:#22C55E;font-size:11px;}
   .rev-late{color:#F59E0B;font-size:11px;}
@@ -242,9 +243,10 @@
   .switch-label{font-weight:600;}
 
   /* 待办：优先级背景色 + 延期高亮 */
-  .card.pri-P0{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);}
-  .card.pri-P1{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45);}
-  .card.pri-P2{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.45);}
+  /* 按分值三档底色：high>=6 红、mid>=4.5 橙、low<4.5 蓝 */
+  .card.score-high{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);}
+  .card.score-mid{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.38);}
+  .card.score-low{background:rgba(59,130,246,.09);border-color:rgba(59,130,246,.32);}
   .card.overdue{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.6);box-shadow:0 0 0 1px rgba(239,68,68,.25);}
 
   /* 页脚版本号 */
@@ -517,7 +519,7 @@
 (function(){
   "use strict";
   const KEY="wb_goal_2026";
-  const APP_VERSION="1.6.0";
+  const APP_VERSION="1.7.0";
   const TODAY=()=>new Date();
   const fmt=(d)=>{const x=new Date(d);const m=String(x.getMonth()+1).padStart(2,'0');const day=String(x.getDate()).padStart(2,'0');return `${x.getFullYear()}-${m}-${day}`;};
   const todayStr=fmt(TODAY());
@@ -902,7 +904,7 @@
     const pri={P0:0,P1:1,P2:2};
     items.sort((a,b)=>{
       if(a.carriedOver!==b.carriedOver)return a.carriedOver?-1:1;
-      return (pri[a.priority]||9)-(pri[b.priority]||9);
+      return taskScore(b)-taskScore(a);   // 分值高者靠上
     });
     document.getElementById('todayCount').textContent=items.length+' 项';
     if(items.length===0){list.innerHTML='<div class="today-empty">今天没有待处理事项，去目标里添加任务吧</div>';return;}
@@ -910,8 +912,8 @@
       const w=state.weeks.find(x=>x.id===t.weekId);
       const g=w?state.goals.find(x=>x.id===w.goalId):null;
       const cls=t.carriedOver?'overdue':'';
-      const dot=t.carriedOver?'overdue':(t.priority==='P0'?'due':'norm');
-      const tag=t.carriedOver?'<span class="tag-over">逾期顺延</span>':(t.priority==='P0'?'<span class="tag-due">高优</span>':'');
+      const dot=t.carriedOver?'overdue':(taskScore(t)>=6?'due':'norm');
+      const tag=t.carriedOver?'<span class="tag-over">逾期顺延</span>':(taskScore(t)>=6?`<span class="tag-due">${taskScore(t)}分</span>`:'');
       const metaTxt=[g?g.title:'未关联',w?w.title:'',].filter(Boolean).join(' › ');
       return `<div class="titem ${cls}">
         <span class="tdot ${dot}"></span>
@@ -929,7 +931,11 @@
     const box=document.getElementById('goalList');
     if(state.goals.length===0){box.innerHTML=emptyState('还没有月目标，点击右上角「新建目标」开始拆解');return;}
     // 已完成月计划沉底（与待办/周任务一致）
-    let ordered=state.goals.slice().sort((a,b)=>(a.status==='done'?1:0)-(b.status==='done'?1:0));
+    let ordered=state.goals.slice().sort((a,b)=>{
+      const da=a.status==='done'?1:0, db=b.status==='done'?1:0;
+      if(da!==db)return da-db;              // 已完成沉底
+      return taskScore(b)-taskScore(a);     // 未完成按分值，高者靠上
+    });
     if(!showDoneGoals)ordered=ordered.filter(g=>g.status!=='done'); // 默认隐藏已完成
     if(ordered.length===0){box.innerHTML=emptyState('月目标已全部完成（可在右上角开关中显示已完成）');return;}
     box.innerHTML=ordered.map(g=>{
@@ -940,9 +946,11 @@
       const undone=ws.filter(w=>w.status!=='done').length;
       const canDone=ws.length>0 && undone===0;
       const tp=monthTimeProgress(g.month);
-      return `<div class="card" style="${isDone?'opacity:.55;':''}">
+      const tier=scoreTier(taskScore(g));
+      return `<div class="card score-${tier}" style="${isDone?'opacity:.55;':''}">
         <div class="card-top">
           <div class="card-title" style="${isDone?'text-decoration:line-through;':''}">${esc(g.title)}</div>
+          ${scoreChip(g)}
           <span class="chip chip-gold">${esc(g.month||'未设月份')}</span>
         </div>
         ${g.desc?`<div class="card-desc">${esc(g.desc)}</div>`:''}
@@ -1017,7 +1025,12 @@
     const statusMap={todo:['chip-gray','待办'],doing:['chip-cyan','进行中'],done:['chip-green','已完成']};
     const priMap={P0:['chip-red','P0'],P1:['chip-amber','P1'],P2:['chip-gray','P2']};
     const statusOrder={todo:0,doing:1,done:2};
-    let weekList=[...state.weeks].sort((a,b)=>(statusOrder[a.status]||9)-(statusOrder[b.status]||9));
+    let weekList=[...state.weeks].sort((a,b)=>{
+      const sa=(statusOrder[a.status]!=null?statusOrder[a.status]:9);
+      const sb=(statusOrder[b.status]!=null?statusOrder[b.status]:9);
+      if(sa!==sb)return sa-sb;              // 状态优先：待办→进行中→已完成
+      return taskScore(b)-taskScore(a);     // 同状态内按分值，高者靠上
+    });
     if(!showDoneWeeks)weekList=weekList.filter(w=>w.status!=='done'); // 默认隐藏已完成
     if(weekList.length===0){box.innerHTML=emptyState('已完成的周任务已隐藏（勾选上方「显示已完成」开关可查看）');return;}
     box.innerHTML=weekList.map(w=>{
@@ -1030,11 +1043,12 @@
       return `<div class="card" style="${w.status==='done'?'opacity:.55;':''}">
         <div class="card-top">
           <div class="card-title" style="${w.status==='done'?'text-decoration:line-through;':''}">${esc(w.title)}</div>
+          ${scoreChip(w)}
         </div>
         <div class="card-meta">
           <span class="chip chip-blue">${g?esc(g.title):'未关联目标'}</span>
           <span class="chip ${s[0]}">${s[1]}</span>
-          <span class="chip ${pr[0]}">${pr[1]}</span>
+          <span class="chip chip-gray">重要${normLevel(w.imp)||2}级 · 紧急${normLevel(w.urg)||2}级</span>
           ${rng?`<span class="chip chip-gray">${rng}</span>`:''}
           ${w.weekLabel?`<span class="chip chip-gray">${esc(w.weekLabel)}</span>`:''}
         </div>
@@ -1058,8 +1072,11 @@
     let sorted=[...state.todos].sort((a,b)=>{
       const ad=a.status==='done', bd=b.status==='done';
       if(ad!==bd)return ad?1:-1;            // 未完成排上面，已完成沉底
+      if(ad&&bd)return a.date<b.date?-1:1;  // 已完成区按日期
+      const ds=taskScore(b)-taskScore(a);    // 未完成区按分值，高者靠上
+      if(ds!==0)return ds;
       if(a.date!==b.date)return a.date<b.date?-1:1;
-      const pr={P0:0,P1:1,P2:2};return (pr[a.priority]||9)-(pr[b.priority]||9);
+      return 0;
     });
     if(!showDoneTodos)sorted=sorted.filter(t=>t.status!=='done'); // 默认隐藏已完成
     if(sorted.length===0){box.innerHTML=emptyState('每日待办已全部完成（可在右上角开关中显示已完成）');return;}
@@ -1067,16 +1084,18 @@
       const w=state.weeks.find(x=>x.id===t.weekId);
       const g=w?state.goals.find(x=>x.id===w.goalId):null;
       const pr=priMap[t.priority]||priMap.P1;
+      const tier=scoreTier(taskScore(t));
       const done=t.status==='done';
       const overdue=t.carriedOver && !done;
-      return `<div class="card ${overdue?'overdue':''} pri-${t.priority||'P1'}" style="${done?'opacity:.55;':''}">
+      return `<div class="card ${overdue?'overdue':''} score-${tier}" style="${done?'opacity:.55;':''}">
         <div class="card-top">
           <div class="card-title" style="${done?'text-decoration:line-through;':''}">${esc(t.title)}</div>
+          ${scoreChip(t)}
           ${overdue?'<span class="chip chip-red">逾期</span>':done?'<span class="chip chip-green">已完成</span>':''}
         </div>
         <div class="card-meta">
           <span class="chip chip-cyan">${esc(t.date)}</span>
-          <span class="chip ${pr[0]}">${pr[1]}</span>
+          <span class="chip chip-gray">重要${normLevel(t.imp)||2}级 · 紧急${normLevel(t.urg)||2}级</span>
           <span class="chip chip-gray">${g?esc(g.title):'未关联'} ${w?'› '+esc(w.title):''}</span>
           ${done&&t.doneAt?`<span class="chip ${(t.origDate||t.date)?(fmt(new Date(t.doneAt))<=(t.origDate||t.date)?'chip-green':'chip-amber'):'chip-gray'}">${fmt(new Date(t.doneAt))} 完成${(t.origDate||t.date)?(fmt(new Date(t.doneAt))<=(t.origDate||t.date)?' · 按时':' · 逾期'):''}</span>`:''}
         </div>
@@ -1198,7 +1217,7 @@
     }else{
       extra=`<div class="rev-sub">${t.carriedOver&&t.origDate?'原计划 '+esc(t.origDate)+' · 已顺延':'计划 '+esc(t.date||'未设日期')}${g?' · '+esc(g.title):''}</div>`;
     }
-    return `<div class="rev-item"><b>${esc(t.title)}</b>${extra}</div>`;
+    return `<div class="rev-item"><b>${esc(t.title)}</b><span class="rev-score">${taskScore(t)}分</span>${extra}</div>`;
   }
   function renderReview(){
     const d=reviewData();
@@ -1212,10 +1231,10 @@
       <div class="stat"><div class="num" style="background:linear-gradient(135deg,#F59E0B,#EF4444);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">${d.carry.length}</div><div class="lab">逾期顺延中</div></div>`;
     const col=(title,arr,withTime,empty)=>`<div class="rev-col"><h4>${title}<span style="color:var(--txt3);font-weight:400;">${arr.length} 项</span></h4>${arr.length?arr.map(t=>todoLine(t,withTime)).join(''):`<div class="rev-sub">${empty}</div>`}</div>`;
     document.getElementById('reviewCols').innerHTML=
-      col('本周完成',d.doneW,true,'本周还没有完成记录')+
-      col('本周待办（未完成）',d.openW,false,'本周计划已全部完成')+
-      col('逾期顺延中',d.carry,false,'没有逾期顺延的任务')+
-      col('下周重点',d.nextW,false,'下周还没有安排');
+      col('本周完成',d.doneW.slice().sort((a,b)=>taskScore(b)-taskScore(a)),true,'本周还没有完成记录')+
+      col('本周待办（未完成）',d.openW.slice().sort((a,b)=>taskScore(b)-taskScore(a)),false,'本周计划已全部完成')+
+      col('逾期顺延中',d.carry.slice().sort((a,b)=>taskScore(b)-taskScore(a)),false,'没有逾期顺延的任务')+
+      col('下周重点',d.nextW.slice().sort((a,b)=>taskScore(b)-taskScore(a)),false,'下周还没有安排');
     const gs=state.goals.filter(g=>g.status!=='done');
     document.getElementById('reviewGoals').innerHTML=gs.length?gs.map(g=>{
       const p=goalProgress(g),tp=monthTimeProgress(g.month);
@@ -1262,7 +1281,7 @@
     L.push('## 四、下周重点');
     L.push('');
     if(d.nextW.length===0)L.push('_下周暂无安排_');
-    else d.nextW.forEach(t=>L.push(`- [ ] ${t.title}　${t.date}　${t.priority||''}`));
+    else d.nextW.slice().sort((a,b)=>taskScore(b)-taskScore(a)).forEach(t=>L.push(`- [ ] ${t.title}　${t.date}　**${taskScore(t)}分**（重要${normLevel(t.imp)||2}级/紧急${normLevel(t.urg)||2}级）`));
     L.push('');
     L.push('## 五、目标进度（完成 vs 时间）');
     L.push('');
@@ -1274,6 +1293,43 @@
     });
     L.push('');
     return L.join('\n');
+  }
+
+  // ---- 重要性 / 紧急度双维度评分（1级最高）----
+  // 重要性：1级=4.5 2级=3 3级=1.5 ；紧急度：1级=3 2级=2 3级=1 ；总分越高排序越靠上
+  const IMP_SCORE={1:4.5,2:3,3:1.5};
+  const URG_SCORE={1:3,2:2,3:1};
+  const IMP_NAME={1:'重要',2:'一般',3:'次要'};
+  const URG_NAME={1:'紧急',2:'正常',3:'不急'};
+  const impScore=o=>IMP_SCORE[normLevel(o&&o.imp)]!=null?IMP_SCORE[normLevel(o&&o.imp)]:3;
+  const urgScore=o=>URG_SCORE[normLevel(o&&o.urg)]!=null?URG_SCORE[normLevel(o&&o.urg)]:2;
+  function taskScore(o){return impScore(o)+urgScore(o);}
+  function normLevel(v){const n=Number(v);return (n>=1&&n<=3)?n:null;}
+  // 分档配色：>=6 高、>=4.5 中、<4.5 低
+  function scoreTier(s){return s>=6?'high':(s>=4.5?'mid':'low');}
+  // 迁移旧数据：P0→重要1/紧急1，P1→2/2，P2→3/3；无 priority 默认 2/2
+  function migrateScoring(){
+    let changed=false;
+    const fix=o=>{
+      if(normLevel(o.imp)&&normLevel(o.urg))return;
+      const map={P0:[1,1],P1:[2,2],P2:[3,3]};
+      const m=map[o.priority]||[2,2];
+      if(!normLevel(o.imp)){o.imp=m[0];changed=true;}
+      if(!normLevel(o.urg)){o.urg=m[1];changed=true;}
+    };
+    state.todos.forEach(fix); state.weeks.forEach(fix); state.goals.forEach(fix);
+    if(changed)save();
+    return changed;
+  }
+  function impOptions(cur){const c=normLevel(cur)||2;
+    return [1,2,3].map(i=>`<option value="${i}" ${c===i?'selected':''}>${i}级 · ${IMP_NAME[i]}（${IMP_SCORE[i]}分）</option>`).join('');}
+  function urgOptions(cur){const c=normLevel(cur)||2;
+    return [1,2,3].map(i=>`<option value="${i}" ${c===i?'selected':''}>${i}级 · ${URG_NAME[i]}（${URG_SCORE[i]}分）</option>`).join('');}
+  // 分值徽章
+  function scoreChip(o){
+    const s=taskScore(o),t=scoreTier(s);
+    const col=t==='high'?'chip-red':(t==='mid'?'chip-amber':'chip-gray');
+    return `<span class="chip ${col}" title="重要性 ${normLevel(o.imp)||2} 级（${impScore(o)}分） + 紧急度 ${normLevel(o.urg)||2} 级（${urgScore(o)}分）">${s} 分</span>`;
   }
 
   // ---- 全部渲染 ----
@@ -1346,6 +1402,10 @@
       <div class="field"><label>目标名称</label><input id="f_title" placeholder="如：8月完成 SAR 成像算法验证" value="${esc(e.title||'')}"></div>
       <div class="field"><label>归属月份</label><select id="f_month">${monthOptions(e.month)}</select></div>
       <div class="field"><label>目标说明</label><textarea id="f_desc" placeholder="关键结果 / 验收标准">${esc(e.desc||'')}</textarea></div>
+      <div class="row2">
+        <div class="field"><label>重要性</label><select id="f_imp">${impOptions(e.imp)}</select></div>
+        <div class="field"><label>紧急度</label><select id="f_urg">${urgOptions(e.urg)}</select></div>
+      </div>
       <div class="field"><label>量化指标（可选）</label><input id="f_metric" placeholder="如：新签客户数 / 在手订单额（留空则按子任务进度计算）" value="${esc(e.metric||'')}"></div>
       <div class="row2">
         <div class="field"><label>当前值</label><input id="f_cur" type="number" step="any" value="${e.current==null?'':e.current}"></div>
@@ -1384,9 +1444,12 @@
       <div class="field"><label>起始日期（该周周一）</label><input id="f_wstart" type="date" value="${esc(e.weekStart||'')}"></div>
       <div class="row2">
         <div class="field"><label>周次</label><input id="f_week" placeholder="如 W3" value="${esc(e.weekLabel||'')}"></div>
-        <div class="field"><label>优先级</label><select id="f_pri">${['P0','P1','P2'].map(p=>`<option ${e.priority===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label>重要性</label><select id="f_imp">${impOptions(e.imp)}</select></div>
       </div>
-      <div class="field"><label>初始状态</label><select id="f_status">${[['todo','待办'],['doing','进行中'],['done','已完成']].map(s=>`<option value="${s[0]}" ${e.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select></div>
+      <div class="row2">
+        <div class="field"><label>紧急度</label><select id="f_urg">${urgOptions(e.urg)}</select></div>
+        <div class="field"><label>初始状态</label><select id="f_status">${[['todo','待办'],['doing','进行中'],['done','已完成']].map(s=>`<option value="${s[0]}" ${e.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select></div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveWeek('${e.id||''}')">保存</button>
@@ -1400,9 +1463,10 @@
       <div class="field"><label>所属月目标（可选）</label><select id="f_goal">${goalOptions(e.goalId,'（不指定 / 留空自动生成）')}</select></div>
       <div class="field"><label>待办内容</label><input id="f_title" placeholder="如：跑通推理脚本并出第一版结果" value="${esc(e.title||'')}"></div>
       <div class="row2">
-        <div class="field"><label>日期</label><input id="f_date" type="date" value="${esc(e.date||todayStr)}"></div>
-        <div class="field"><label>优先级</label><select id="f_pri">${['P0','P1','P2'].map(p=>`<option ${e.priority===p?'selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label>重要性</label><select id="f_imp">${impOptions(e.imp)}</select></div>
+        <div class="field"><label>紧急度</label><select id="f_urg">${urgOptions(e.urg)}</select></div>
       </div>
+      <div class="field"><label>日期</label><input id="f_date" type="date" value="${esc(e.date||todayStr)}"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" onclick="saveTodo('${e.id||''}')">保存</button>
@@ -1424,8 +1488,10 @@
     if(!title){toast('请填写目标名称');return;}
     const annualId=document.getElementById('f_annual').value;
     const mf=readMetricFields();
-    if(id){const g=state.goals.find(x=>x.id===id);g.title=title;g.month=document.getElementById('f_month').value.trim();g.desc=document.getElementById('f_desc').value.trim();g.annualId=annualId||undefined;Object.assign(g,mf);}
-    else state.goals.push(Object.assign({id:uid(),title,month:document.getElementById('f_month').value.trim(),desc:document.getElementById('f_desc').value.trim(),annualId:annualId||undefined,createdAt:Date.now()},mf));
+    const imp=Number(document.getElementById('f_imp').value)||2;
+    const urg=Number(document.getElementById('f_urg').value)||2;
+    if(id){const g=state.goals.find(x=>x.id===id);g.title=title;g.month=document.getElementById('f_month').value.trim();g.desc=document.getElementById('f_desc').value.trim();g.annualId=annualId||undefined;g.imp=imp;g.urg=urg;Object.assign(g,mf);}
+    else state.goals.push(Object.assign({id:uid(),title,month:document.getElementById('f_month').value.trim(),desc:document.getElementById('f_desc').value.trim(),annualId:annualId||undefined,imp,urg,createdAt:Date.now()},mf));
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveWeek=function(id){
@@ -1433,8 +1499,8 @@
     const title=document.getElementById('f_title').value.trim();
     if(!goalId){toast('请先选择所属月目标');return;}
     if(!title){toast('请填写周任务名称');return;}
-    if(id){const w=state.weeks.find(x=>x.id===id);w.goalId=goalId;w.title=title;w.weekLabel=document.getElementById('f_week').value.trim();w.weekStart=document.getElementById('f_wstart').value;w.priority=document.getElementById('f_pri').value;w.status=document.getElementById('f_status').value;}
-    else state.weeks.push({id:uid(),goalId,title,weekLabel:document.getElementById('f_week').value.trim(),weekStart:document.getElementById('f_wstart').value,priority:document.getElementById('f_pri').value,status:document.getElementById('f_status').value,createdAt:Date.now()});
+    if(id){const w=state.weeks.find(x=>x.id===id);w.goalId=goalId;w.title=title;w.weekLabel=document.getElementById('f_week').value.trim();w.weekStart=document.getElementById('f_wstart').value;w.imp=Number(document.getElementById('f_imp').value)||2;w.urg=Number(document.getElementById('f_urg').value)||2;w.status=document.getElementById('f_status').value;}
+    else state.weeks.push({id:uid(),goalId,title,weekLabel:document.getElementById('f_week').value.trim(),weekStart:document.getElementById('f_wstart').value,imp:Number(document.getElementById('f_imp').value)||2,urg:Number(document.getElementById('f_urg').value)||2,status:document.getElementById('f_status').value,createdAt:Date.now()});
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveTodo=function(id){
@@ -1442,7 +1508,8 @@
     const goalId=document.getElementById('f_goal').value;
     const title=document.getElementById('f_title').value.trim();
     if(!title){toast('请填写待办内容');return;}
-    const pri=document.getElementById('f_pri').value;
+    const imp=Number(document.getElementById('f_imp').value)||2;
+    const urg=Number(document.getElementById('f_urg').value)||2;
     const date=document.getElementById('f_date').value;
     let wid=weekId, gid=goalId;
     const curMonth=todayStr.slice(0,7);
@@ -1450,19 +1517,19 @@
     if(!id){
       if(!wid && !gid){
         gid=uid();
-        state.goals.push({id:gid,title,month:curMonth,desc:'',annualId:undefined,status:'todo',createdAt:Date.now()});
+        state.goals.push({id:gid,title,month:curMonth,desc:'',annualId:undefined,imp,urg,status:'todo',createdAt:Date.now()});
         wid=uid();
-        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,priority:pri,status:'todo',createdAt:Date.now()});
+        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,imp,urg,status:'todo',createdAt:Date.now()});
         toast('已自动创建同名月目标与周任务');
       } else if(!wid && gid){
         // 选了月目标但没选周任务：在该月目标下自动生成同名周任务
         wid=uid();
-        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,priority:pri,status:'todo',createdAt:Date.now()});
+        state.weeks.push({id:wid,goalId:gid,title,weekLabel:'',weekStart:todayStr,imp,urg,status:'todo',createdAt:Date.now()});
         toast('已在所选月目标下自动创建同名周任务');
       }
     }
-    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=wid;t.title=title;t.date=date;t.priority=pri;if(t.date>=todayStr)t.carriedOver=false;}
-    else state.todos.push({id:uid(),weekId:wid,title,date,priority:pri,status:'todo',carriedOver:false,createdAt:Date.now()});
+    if(id){const t=state.todos.find(x=>x.id===id);t.weekId=wid;t.title=title;t.date=date;t.imp=imp;t.urg=urg;if(t.date>=todayStr)t.carriedOver=false;}
+    else state.todos.push({id:uid(),weekId:wid,title,date,imp,urg,status:'todo',carriedOver:false,createdAt:Date.now()});
     save();closeModal();renderAll();toast('已保存');
   };
   window.saveAnnual=function(id){
@@ -1683,19 +1750,19 @@
       {id:g2,title:'推进 L6XXD 机载 SAR 投标材料',month:'2026-08',annualId:ag,desc:'完成技术偏离表、资质文件与报价初稿',createdAt:Date.now()}
     ];
     state.weeks=[
-      {id:w1,goalId:g1,title:'W2 数据集标注与清洗',weekLabel:'W2',weekStart:'2026-08-03',priority:'P0',status:'doing',createdAt:Date.now()},
-      {id:w2,goalId:g1,title:'W3 模型训练与调参',weekLabel:'W3',weekStart:'2026-08-10',priority:'P1',status:'todo',createdAt:Date.now()},
-      {id:w3,goalId:g2,title:'W2 技术偏离表复核',weekLabel:'W2',weekStart:'2026-08-03',priority:'P0',status:'doing',createdAt:Date.now()},
-      {id:w4,goalId:g2,title:'W1 资质文件归集',weekLabel:'W1',weekStart:'2026-07-27',priority:'P2',status:'done',createdAt:Date.now()}
+      {id:w1,goalId:g1,title:'W2 数据集标注与清洗',weekLabel:'W2',weekStart:'2026-08-03',imp:1,urg:1,status:'doing',createdAt:Date.now()},
+      {id:w2,goalId:g1,title:'W3 模型训练与调参',weekLabel:'W3',weekStart:'2026-08-10',imp:2,urg:2,status:'todo',createdAt:Date.now()},
+      {id:w3,goalId:g2,title:'W2 技术偏离表复核',weekLabel:'W2',weekStart:'2026-08-03',imp:1,urg:1,status:'doing',createdAt:Date.now()},
+      {id:w4,goalId:g2,title:'W1 资质文件归集',weekLabel:'W1',weekStart:'2026-07-27',imp:3,urg:3,status:'done',createdAt:Date.now()}
     ];
     // 计算昨天日期用于逾期示例
     const y=new Date();y.setDate(y.getDate()-2);const yStr=fmt(y);
     state.todos=[
-      {id:uid(),weekId:w1,title:'完成 200 张训练集人工标注',date:todayStr,priority:'P0',status:'todo',carriedOver:false,createdAt:Date.now()},
-      {id:uid(),weekId:w1,title:'撰写数据清洗脚本并跑通',date:todayStr,priority:'P1',status:'todo',carriedOver:false,createdAt:Date.now()},
-      {id:uid(),weekId:w3,title:'偏离表「招标要求/投标响应」两列对调复核',date:yStr,priority:'P0',status:'todo',carriedOver:true,createdAt:Date.now()},
-      {id:uid(),weekId:w2,title:'搭建训练环境（CUDA + torch）',date:todayStr,priority:'P2',status:'todo',carriedOver:false,createdAt:Date.now()},
-      {id:uid(),weekId:w4,title:'整理公司高新企业证书扫描件',date:todayStr,priority:'P2',status:'done',carriedOver:false,createdAt:Date.now()}
+      {id:uid(),weekId:w1,title:'完成 200 张训练集人工标注',date:todayStr,imp:1,urg:1,status:'todo',carriedOver:false,createdAt:Date.now()},
+      {id:uid(),weekId:w1,title:'撰写数据清洗脚本并跑通',date:todayStr,imp:2,urg:2,status:'todo',carriedOver:false,createdAt:Date.now()},
+      {id:uid(),weekId:w3,title:'偏离表「招标要求/投标响应」两列对调复核',date:yStr,imp:1,urg:1,status:'todo',carriedOver:true,createdAt:Date.now()},
+      {id:uid(),weekId:w2,title:'搭建训练环境（CUDA + torch）',date:todayStr,imp:3,urg:3,status:'todo',carriedOver:false,createdAt:Date.now()},
+      {id:uid(),weekId:w4,title:'整理公司高新企业证书扫描件',date:todayStr,imp:3,urg:3,status:'done',carriedOver:false,createdAt:Date.now()}
     ];
     save();
   }
@@ -1770,6 +1837,7 @@
   if(state.goals.length===0 && state.weeks.length===0 && state.todos.length===0){
     seed();
   }
+  migrateScoring();
   carryOver();
   renderAll();
   const av=document.getElementById('appVer');if(av)av.textContent='v'+APP_VERSION;
